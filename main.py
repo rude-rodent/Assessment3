@@ -1,5 +1,6 @@
 import pygame
 import sys
+import math
 
 pygame.init()
 pygame.display.set_caption("Assessment 3")
@@ -10,29 +11,49 @@ screenHeight = 720
 
 playerImage = pygame.image.load("player.png")
 playerHitBox = playerImage.get_rect()
+moveSpeed = 0.3
 
 
 class Player:
 
     def __init__(self):
-        self.xPosition = screenWidth/2
-        self.yPosition = screenHeight/2
-        self.hitBox = playerHitBox
+        # Starting position.
+        self.x = screenWidth / 2
+        self.y = screenHeight / 2
+        # Original image kept to avoid distortion caused by rotating.
+        self.originalImage = playerImage
+        # Will be set later.
+        self.rotatedImage = playerImage
+        self.rotatedImageRect = playerImage.get_rect()
 
-    def draw(self):
-        screen.blit(playerImage, (self.xPosition, self.yPosition))
-        self.hitBox = playerImage.get_rect(topleft=(self.xPosition, self.yPosition))
-        # pygame.draw.rect(screen, (200, 0, 0), self.hitBox)
+    def look(self):
+        # Get the mouse position.
+        mouseX, mouseY = pygame.mouse.get_pos()
+        # Calculate the vector between the player and mouse.
+        relativeX, relativeY = mouseX - self.x, mouseY - self.y
+        # Convert the vector into an angle (in radians). Must be inverted.
+        radAngle = -math.atan2(relativeY, relativeX)
+        # Convert the angle into degrees.
+        degAngle = radAngle * 180/math.pi
+        # Create a rotated copy of the original image (if no copy, distortion happens).
+        self.rotatedImage = pygame.transform.rotate(self.originalImage, int(degAngle))
+        # Create a rect of the rotated image; its center is the center of a rect of the original image; its center is the player's position.
+        self.rotatedImageRect = self.rotatedImage.get_rect(center=self.originalImage.get_rect(center=(self.x, self.y)).center)
 
     def move(self):
+        # Move the player based on key presses, based on a move speed value.
         if pygame.key.get_pressed()[pygame.K_a]:
-            self.xPosition -= 1
+            self.x -= moveSpeed
         if pygame.key.get_pressed()[pygame.K_d]:
-            self.xPosition += 1
+            self.x += moveSpeed
         if pygame.key.get_pressed()[pygame.K_w]:
-            self.yPosition -= 1
+            self.y -= moveSpeed
         if pygame.key.get_pressed()[pygame.K_s]:
-            self.yPosition += 1
+            self.y += moveSpeed
+
+    def draw(self):
+        # Blit the rotated image to the position of the rotated image's rect.
+        screen.blit(self.rotatedImage, self.rotatedImageRect)
 
 
 playerInstance = Player()
@@ -47,6 +68,7 @@ while running:
     screen.fill(background)
 
     playerInstance.move()
+    playerInstance.look()
     playerInstance.draw()
 
     pygame.display.update()
