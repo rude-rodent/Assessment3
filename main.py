@@ -10,7 +10,7 @@ screenWidth = 1280
 screenHeight = 720
 
 playerImage = pygame.image.load("player.png")
-playerHitBox = playerImage.get_rect()
+bulletImage = pygame.image.load("bullet.png")
 moveSpeed = 0.3
 
 
@@ -51,12 +51,37 @@ class Player:
         if pygame.key.get_pressed()[pygame.K_s]:
             self.y += moveSpeed
 
+    def fire(self):
+        mouseX, mouseY = pygame.mouse.get_pos()
+        direction = pygame.math.Vector2(mouseX - self.x, mouseY - self.y).normalize()
+        position = (self.x, self.y)
+        bulletInstance = Bullet(position, direction)
+        bulletList.append(bulletInstance)
+
     def draw(self):
         # Blit the rotated image to the position of the rotated image's rect.
         screen.blit(self.rotatedImage, self.rotatedImageRect)
 
 
+class Bullet:
+
+    def __init__(self, position, direction):
+        self.image = bulletImage
+        self.bulletSpeed = 1
+        self.x = position[0]
+        self.y = position[1]
+        self.direction = direction
+
+    def move(self):
+        self.x += self.direction.x * self.bulletSpeed
+        self.y += self.direction.y * self.bulletSpeed
+
+    def draw(self):
+        screen.blit(self.image, (self.x, self.y))
+
+
 playerInstance = Player()
+bulletList = []
 background = (200, 30, 30)
 
 running = True
@@ -64,12 +89,17 @@ while running:
     for event in pygame.event.get():  # See the pygame user guide for various events (e.g. get button down).
         if event.type == pygame.QUIT:
             sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            playerInstance.fire()
 
     screen.fill(background)
 
     playerInstance.move()
     playerInstance.look()
     playerInstance.draw()
+    for bullet in bulletList:
+        bullet.move()
+        bullet.draw()
 
     pygame.display.update()
     pygame.display.flip()  # 2 buffers: stuff that's going to draw, stuff that's already drawn. Flip turns the two.
