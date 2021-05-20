@@ -88,11 +88,32 @@ class Bullet:
         self.bulletSpeed = playerBulletSpeed
         # The direction, a Vector2.
         self.direction = direction
+        self.xPos = position[0]
+        self.yPos = position[1]
 
     def move(self):
         # Add the x and y values from the direction Vector2, multiplied by the bullet speed.
-        self.hitBox.x += self.direction.x * self.bulletSpeed
-        self.hitBox.y += self.direction.y * self.bulletSpeed
+        for i in range(playerBulletSpeed):
+            self.xPos += self.direction.x * 1
+            self.hitBox.x = int(self.xPos)
+            self.collision()
+            if self.collision():
+                self.hitBox.x -= 1
+                self.direction.x *= -1
+        for i in range(playerBulletSpeed):
+            self.yPos += + self.direction.y * 1
+            self.hitBox.y = int(self.yPos)
+            self.collision()
+            if self.collision():
+                self.hitBox.y -= 1
+                self.direction.y *= -1
+
+    def collision(self):
+        for wall in wallList:
+            if self.hitBox.colliderect(wall.hitBox):
+                return True
+        return False
+
 
     def draw(self):
         # Draw the bullet at its updated position.
@@ -151,34 +172,6 @@ while running:
         wall.draw()
 
     for bullet in playerBulletList:
-        for wall in wallList:
-            if bullet.hitBox.colliderect(wall.hitBox):
-                displacement = pygame.math.Vector2(bullet.hitBox.centerx - wall.hitBox.centerx, bullet.hitBox.centery - wall.hitBox.centery)
-                xExtent = wall.hitBox.w/2
-                yExtent = wall.hitBox.h/2
-                xUnit = pygame.math.Vector2((wall.hitBox.midright[0] - wall.hitBox.centerx), (wall.hitBox.midright[1] - wall.hitBox.centery)).normalize()
-                yUnit = pygame.math.Vector2((wall.hitBox.midbottom[0] - wall.hitBox.centerx), (wall.hitBox.midbottom[1] - wall.hitBox.centery)).normalize()
-                xDistance = pygame.math.Vector2.dot(displacement, xUnit)
-                print(xDistance)
-                if xDistance >= xExtent:
-                    xDistance = xExtent
-                if xDistance <= -xExtent:
-                    xDistance = -xExtent
-                yDistance = pygame.math.Vector2.dot(displacement, yUnit)
-                print(yDistance)
-                if yDistance >= yExtent:
-                    yDistance = yExtent
-                if yDistance <= -yExtent:
-                    yDistance = -yExtent
-                print(xDistance, yDistance)
-                # BUG: if xDistance == xExtent or yDistance == yExtent, normal = 0?
-                collidePoint = pygame.math.Vector2(wall.hitBox.center + xDistance * xUnit + yDistance * yUnit)
-                normal = pygame.math.Vector2(bullet.hitBox.center - collidePoint).normalize()
-                
-                # r = d -2(d.n)n
-                newDirection = bullet.direction - 2 * pygame.math.Vector2.dot(bullet.direction, normal) * normal
-                bullet.direction = newDirection
-
         bullet.move()
         bullet.draw()
 
