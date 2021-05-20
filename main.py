@@ -12,7 +12,7 @@ FPS = 60
 
 playerImage = pygame.image.load("player.png")
 bulletImage = pygame.image.load("bullet.png")
-moveSpeed = 1
+moveSpeed = 5
 playerBulletSpeed = 10
 
 
@@ -76,30 +76,27 @@ class Player:
     def draw(self):
         # Blit the rotated image to the position of the rotated image's rect.
         screen.blit(self.rotatedImage, self.rotatedImageRect)
-        pygame.draw.rect(screen, (255, 255, 255), self.hitBox)
+        # pygame.draw.rect(screen, (255, 255, 255), self.hitBox)
 
 
 class Bullet:
 
     def __init__(self, position, direction):
-        self.image = bulletImage
-        self.hitBox = bulletImage.get_rect()
-        self.bulletSpeed = playerBulletSpeed
         # The x and y values from the position tuple.
-        self.x = position[0]
-        self.y = position[1]
+        self.hitBox = pygame.Rect(position[0], position[1], 6, 6)
+        self.image = bulletImage
+        self.bulletSpeed = playerBulletSpeed
         # The direction, a Vector2.
         self.direction = direction
 
     def move(self):
         # Add the x and y values from the direction Vector2, multiplied by the bullet speed.
-        self.x += self.direction.x * self.bulletSpeed
-        self.y += self.direction.y * self.bulletSpeed
-        self.hitBox = self.image.get_rect(topleft=(self.x, self.y))
+        self.hitBox.x += self.direction.x * self.bulletSpeed
+        self.hitBox.y += self.direction.y * self.bulletSpeed
 
     def draw(self):
         # Draw the bullet at its updated position.
-        screen.blit(self.image, (self.x, self.y))
+        screen.blit(self.image, self.hitBox)
         pygame.draw.rect(screen, (255, 255, 255), self.hitBox)
 
 
@@ -111,7 +108,7 @@ class Wall:
         self.y = 300
         self.w = 300
         self.h = 300
-        self.colour = 0, 0, 0
+        self.colour = 100, 100, 100
         self.hitBox = pygame.Rect(self.x, self.y, self.w, self.h)
 
     def draw(self):
@@ -147,20 +144,43 @@ while running:
     if key[pygame.K_s]:
         playerInstance.move(0, moveSpeed)
 
-    for wall in wallList:
-        wall.draw()
-
     playerInstance.look()
     playerInstance.draw()
+
+    for wall in wallList:
+        wall.draw()
 
     for bullet in playerBulletList:
         for wall in wallList:
             if bullet.hitBox.colliderect(wall.hitBox):
-                playerBulletList.remove(bullet)
-            else:
-                bullet.move()
-                bullet.draw()
+                displacement = pygame.math.Vector2(bullet.hitBox.centerx - wall.hitBox.centerx, bullet.hitBox.centery - wall.hitBox.centery)
+                xExtent = wall.hitBox.w/2
+                yExtent = wall.hitBox.h/2
+                xUnit = pygame.math.Vector2((wall.hitBox.midright[0] - wall.hitBox.centerx), (wall.hitBox.midright[1] - wall.hitBox.centery)).normalize()
+                yUnit = pygame.math.Vector2((wall.hitBox.midbottom[0] - wall.hitBox.centerx), (wall.hitBox.midbottom[1] - wall.hitBox.centery)).normalize()
+                xDistance = pygame.math.Vector2.dot(displacement, xUnit)
+                print(xDistance)
+                if xDistance >= xExtent:
+                    xDistance = xExtent
+                if xDistance <= -xExtent:
+                    xDistance = -xExtent
+                yDistance = pygame.math.Vector2.dot(displacement, yUnit)
+                print(yDistance)
+                if yDistance >= yExtent:
+                    yDistance = yExtent
+                if yDistance <= -yExtent:
+                    yDistance = -yExtent
+                print(xDistance, yDistance)
+                # BUG: if xDistance == xExtent or yDistance == yExtent, normal = 0?
+                collidePoint = pygame.math.Vector2(wall.hitBox.center + xDistance * xUnit + yDistance * yUnit)
+                normal = pygame.math.Vector2(bullet.hitBox.center - collidePoint).normalize()
+                
+                # r = d -2(d.n)n
+                newDirection = bullet.direction - 2 * pygame.math.Vector2.dot(bullet.direction, normal) * normal
+                bullet.direction = newDirection
+
+        bullet.move()
+        bullet.draw()
 
     pygame.display.update()
     pygame.display.flip()  # 2 buffers: stuff that's going to draw, stuff that's already drawn. Flip turns the two.
-
