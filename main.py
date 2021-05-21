@@ -4,7 +4,7 @@ import math
 
 pygame.init()
 pygame.display.set_caption("Assessment 3")
-screen = pygame.display.set_mode((1280, 720))  # Sets resolution.
+screen = pygame.display.set_mode((1920, 1024))  # Sets resolution.
 
 screenWidth = 1280
 screenHeight = 720
@@ -15,12 +15,15 @@ bulletImage = pygame.image.load("bullet.png")
 moveSpeed = 5
 playerBulletSpeed = 10
 
+tileWidth = 160
+tileHeight = 170
+
 
 class Player:
 
     def __init__(self):
         # Hit box of the player, used to move the sprite and detect collisions.
-        self.hitBox = pygame.Rect(30, 30, 50, 50)
+        self.hitBox = pygame.Rect(300, 300, 50, 50)
         # Original image kept to avoid distortion caused by rotating.
         self.originalImage = playerImage
         # Will be set later.a
@@ -35,7 +38,7 @@ class Player:
         # Convert the vector into an angle (in radians). Must be inverted.
         radAngle = -math.atan2(relativeY, relativeX)
         # Convert the angle into degrees.
-        degAngle = radAngle * 180/math.pi
+        degAngle = radAngle * 180 / math.pi
         # Create a rotated copy of the original image (if no copy, distortion happens).
         self.rotatedImage = pygame.transform.rotate(self.originalImage, int(degAngle))
         # Create a rect of the rotated image; its center is the center of a rect of the original image; its center is the player's position.
@@ -92,16 +95,24 @@ class Bullet:
         self.yPos = position[1]
 
     def move(self):
-        # Add the x and y values from the direction Vector2, multiplied by the bullet speed.
+        # Movement with perfect collisions.
+        # Loop this a number of times equal to the desired bullet speed.
         for i in range(playerBulletSpeed):
-            self.xPos += self.direction.x * 1
+            # Move along the X axis by an amount specified in the direction (normalised vector).
+            self.xPos += self.direction.x
+            # Update the hit box's x position.
             self.hitBox.x = int(self.xPos)
+            # Check the collision.
             self.collision()
+            # If the collision function returns true:
             if self.collision():
+                # Move the hit box out of the collider.
                 self.hitBox.x -= 1
+                # Reverse the x component of the hit box's direction (because it hit the left/right side of a wall).
                 self.direction.x *= -1
+        # Do the same for the y axis.
         for i in range(playerBulletSpeed):
-            self.yPos += + self.direction.y * 1
+            self.yPos += + self.direction.y
             self.hitBox.y = int(self.yPos)
             self.collision()
             if self.collision():
@@ -109,11 +120,11 @@ class Bullet:
                 self.direction.y *= -1
 
     def collision(self):
+        # Loop through the walls, if the bullet has collided with one, return True.
         for wall in wallList:
             if self.hitBox.colliderect(wall.hitBox):
                 return True
         return False
-
 
     def draw(self):
         # Draw the bullet at its updated position.
@@ -123,12 +134,12 @@ class Bullet:
 
 class Wall:
 
-    def __init__(self):
+    def __init__(self, x, y):
         wallList.append(self)
-        self.x = 300
-        self.y = 300
-        self.w = 300
-        self.h = 300
+        self.x = x
+        self.y = y
+        self.w = 160
+        self.h = 170
         self.colour = 100, 100, 100
         self.hitBox = pygame.Rect(self.x, self.y, self.w, self.h)
 
@@ -136,11 +147,35 @@ class Wall:
         pygame.draw.rect(screen, self.colour, self.hitBox)
 
 
+# Function for automatically building a level written as a list of strings.
+def level_build():
+    # X and y positions to feed into Wall()
+    x = 0
+    y = 0
+    for row in level1:
+        # Each column (letter in string), move the X by the tile size. If W, spawn a wall.
+        for column in row:
+            if column == "W":
+                Wall(x, y)
+            x += tileWidth
+        # Each row (string in list), reset the X to 0 and increase the Y by the tile size.
+        x = 0
+        y += tileHeight
+
+
+level1 = ["WWWWWWWWWWWW",
+          "W          W",
+          "W          W",
+          "W          W",
+          "W          W",
+          "WWWWWWWWWWWW"]
+
 wallList = []
-wallInstance = Wall()
 playerInstance = Player()
 playerBulletList = []
 background = (200, 30, 30)
+
+level_build()
 
 running = True
 
