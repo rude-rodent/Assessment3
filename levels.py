@@ -1,0 +1,13 @@
+level1 = ["WWWWW WWWWWWWWW WWWWW",
+          "W                   W",
+          "W          W        W",
+          "W                   W",
+          "W                   W",
+          "W                   W",
+          "W                   W",
+          "W                   W",
+          "W                   W",
+          "W                   W",
+          "W                   W",
+          "W                   W",
+          "WWWWWWW WWWWWW WWWWWW"]
