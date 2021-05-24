@@ -1,9 +1,11 @@
 import pygame
 import math
+import random
 import info as i
 
 allSprites = pygame.sprite.Group()
 wallList = []
+bulletList = []
 
 
 class Player(pygame.sprite.Sprite):
@@ -97,6 +99,16 @@ class Bullet(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         # Add the bullet to the sprite group.
         allSprites.add(self)
+        bulletList.append(self)
+        # To avoid lag/chaos, a limited number of bullets are allowed on screen.
+        # Check the # of bullets, if > 10, set the oldest bullet's "alive" bool to false.
+        if len(bulletList) > i.maxBullets:
+            bulletList[0].alive = False
+        # Go through the bulletList and delete any bullets with alive = false. Also delete from the sprite group.
+        for bullet in bulletList:
+            if not bullet.alive:
+                bulletList.remove(bullet)
+                allSprites.remove(bullet)
         # The x and y values from the position tuple.
         self.xPos = position[0]
         self.yPos = position[1]
@@ -106,6 +118,7 @@ class Bullet(pygame.sprite.Sprite):
         self.bulletSpeed = i.playerBulletSpeed
         # The direction, a Vector2.
         self.direction = direction
+        self.alive = True
 
 
     def update(self):
@@ -133,6 +146,7 @@ class Bullet(pygame.sprite.Sprite):
                 self.rect.y -= 1
                 self.direction.y *= -1
 
+
     def collision(self):
         # Loop through the walls, if the bullet has collided with one, return True.
         for wall in wallList:
@@ -152,3 +166,87 @@ class Wall(pygame.sprite.Sprite):
         # Set the wall's rect based on tile size values stored in info.
         self.rect = pygame.Rect(x, y, i.tileWidth, i.tileHeight)
         self.image = pygame.Surface((i.tileWidth, i.tileHeight))
+
+
+class Enemy(pygame.sprite.Sprite):
+
+    def __init__(self, xPos, yPos):
+        pygame.sprite.Sprite.__init__(self)
+        # Add the enemy to the sprite group.
+        allSprites.add(self)
+        # Save an original version of the image for use in rotation (like the player).
+        self.originalImage = i.enemyImage
+        # Give the enemy a hit box, xPos and yPos assigned in the level building function.
+        self.hitBox = pygame.Rect(xPos, yPos, 50, 50)
+        # The rotatable image & rect that will be used to draw the enemy.
+        self.image = i.enemyImage
+        self.rect = self.image.get_rect()
+        # List of possible directions -- the enemy will only move up, down, left, or right.
+        self.possibleDirections = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        # Set the enemy's initial direction.
+        self.direction = random.choice(self.possibleDirections)
+
+    def update(self):
+        self.move()
+        self.look()
+        # move up/down/left/right (DONE)
+        # look in direction of movement (DONE)
+        # collide w wall > push out (DONE)
+        # stop for 3 seconds
+        # pick new direction (DONE)
+        # pick new direction at random times between 3 & 5 seconds
+
+    def look(self):
+        # Rotate the enemy's image based on its direction.
+        if self.direction == (1, 0):
+            # If the enemy is facing right, the image doesn't need to be rotated.
+            self.image = self.originalImage
+        if self.direction == (-1, 0):
+            self.image = pygame.transform.rotate(self.originalImage, 180)
+        if self.direction == (0, 1):
+            self.image = pygame.transform.rotate(self.originalImage, 270)
+        if self.direction == (0, -1):
+            self.image = pygame.transform.rotate(self.originalImage, 90)
+        # Create a new rotated rect with its center in the middle of the enemy's hit box.
+        self.rect = self.image.get_rect(center=self.hitBox.center)
+
+    def move(self):
+        # Create a Vector2 for the enemy's velocity.
+        velocity = pygame.Vector2(self.direction[0], self.direction[1]) * i.enemySpeed
+        # Same as player, check collisions & move on individual axes.
+        if velocity.x != 0:
+            self.collisions(velocity.x, 0)
+        if velocity.y != 0:
+            self.collisions(0, velocity.y)
+
+    def collisions(self, velX, velY):
+        # Move the enemy's hit box.
+        self.hitBox.x += velX
+        self.hitBox.y += velY
+
+        # Check through the walls.
+        for wall in wallList:
+            # If there is a collision:
+            if self.hitBox.colliderect(wall.rect):
+                # Find which way the enemy is moving.
+                if velX > 0:
+                    # Push the enemy's hit box out of the wall.
+                    self.hitBox.right = wall.rect.left
+                if velX < 0:
+                    self.hitBox.left = wall.rect.right
+                if velY > 0:
+                    self.hitBox.bottom = wall.rect.top
+                if velY < 0:
+                    self.hitBox.top = wall.rect.bottom
+                # Make the enemy change direction.
+                self.turn()
+
+    def turn(self):
+        # Change the enemy's direction, but don't turn the enemy towards the wall they just hit.
+        oldDirection = self.direction
+        # Temporarily remove the enemy's current direction from the list of possible directions.
+        self.possibleDirections.remove(self.direction)
+        # Choose a new random direction.
+        self.direction = random.choice(self.possibleDirections)
+        # Add the old direction back to the list.
+        self.possibleDirections.append(oldDirection)

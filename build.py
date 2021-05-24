@@ -46,6 +46,8 @@ def level_build():
         for column in row:
             if column == "W":
                 s.Wall(x, y)
+            if column == "E":
+                s.Enemy(x, y)
             x += i.tileWidth
         # Each row (string in list), reset the X to 0 and increase the Y by the tile size.
         x = 0
