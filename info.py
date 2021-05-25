@@ -6,6 +6,8 @@ screenHeight = 720
 FPS = 60
 BGColour = (200, 200, 200)
 
+screen = pygame.display.set_mode((screenWidth, screenHeight))  # Sets resolution.
+
 playerImage = pygame.image.load("player.png")
 bulletImage = pygame.image.load("bullet.png")
 enemyImage = pygame.image.load("enemy.png")
