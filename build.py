@@ -1,21 +1,20 @@
 import pygame
 import info as i
 import sprites as s
-import levels as l
 
-# Length of a string (row) in the level list * tile width.
-mapWidth = len(l.level1[0]) * i.tileWidth
-# Number of strings (columns) in the level list * tile height.
-mapHeight = len(l.level1) * i.tileHeight
+cameraInstance = ""
+playerInstance = ""
 
 
 class Camera:
 
-    def __init__(self):
-        self.width = mapWidth
-        self.height = mapHeight
+    def __init__(self, level):
+        # Length of a string (row) in the level list * tile width.
+        self.mapWidth = len(level[0]) * i.tileWidth
+        # Number of strings (columns) in the level list * tile height.
+        self.mapHeight = len(level) * i.tileHeight
         # Setting up the camera as a rect.
-        self.rect = pygame.Rect(0, 0, self.width, self.height)
+        self.rect = pygame.Rect(0, 0, self.mapWidth, self.mapHeight)
 
     def offset(self, sprite):
         # Returns the sprite's rect after moving it relative to the camera.
@@ -30,25 +29,35 @@ class Camera:
         # Setting upper & lower limits for the camera.
         x = min(0, x)
         y = min(0, y)
-        x = max(-(self.width - i.screenWidth), x)
-        y = max(-(self.height - i.screenHeight), y)
+        x = max(-(self.mapWidth - i.screenWidth), x)
+        y = max(-(self.mapHeight - i.screenHeight), y)
         # Update the position of the rect.
-        self.rect = pygame.Rect(x, y, self.width, self.height)
+        self.rect = pygame.Rect(x, y, self.mapWidth, self.mapHeight)
 
 
 # Function for automatically building a level written as a list of strings.
-def level_build():
+def level_build(level):
+    global cameraInstance
+    global playerInstance
     # X and y positions to feed into Wall()
     x = 0
     y = 0
-    for row in l.level1:
+    for row in level:
         # Each column (letter in string), move the X by the tile size. If W, spawn a wall.
         for column in row:
             if column == "W":
                 s.Wall(x, y)
             if column == "E":
                 s.Enemy(x, y)
+            if column == "P":
+                cameraInstance = Camera(i.currentLevel)
+                playerInstance = s.Player(x, y, cameraInstance)
             x += i.tileWidth
         # Each row (string in list), reset the X to 0 and increase the Y by the tile size.
         x = 0
         y += i.tileHeight
+
+
+def clear_level():
+    for sprite in s.allSprites:
+        sprite.kill()

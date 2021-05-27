@@ -4,8 +4,9 @@ import random
 import info as i
 
 allSprites = pygame.sprite.Group()
-wallList = []
-bulletList = []
+wallGroup = pygame.sprite.Group()
+bulletGroup = pygame.sprite.Group()
+enemyGroup = pygame.sprite.Group()
 
 
 class Player(pygame.sprite.Sprite):
@@ -68,7 +69,7 @@ class Player(pygame.sprite.Sprite):
         self.hitBox.x += velX
         self.hitBox.y += velY
 
-        for wall in wallList:
+        for wall in wallGroup:
             # Check for collisions with any walls.
             if self.hitBox.colliderect(wall.rect):
                 # If a collision is detected, check which way the player was moving when it happened.
@@ -99,15 +100,15 @@ class Bullet(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         # Add the bullet to the sprite group.
         allSprites.add(self)
-        bulletList.append(self)
+        bulletGroup.add(self)
         # To avoid lag/chaos, a limited number of bullets are allowed on screen.
         # Check the # of bullets, if > 10, set the oldest bullet's "alive" bool to false.
-        if len(bulletList) > i.maxBullets:
-            bulletList[0].alive = False
+        if len(bulletGroup) > i.maxBullets:
+            bulletGroup.sprites()[0].alive = False
         # Go through the bulletList and delete any bullets with alive = false. Also delete from the sprite group.
-        for bullet in bulletList:
+        for bullet in bulletGroup:
             if not bullet.alive:
-                bulletList.remove(bullet)
+                bulletGroup.remove(bullet)
                 allSprites.remove(bullet)
         # The x and y values from the position tuple.
         self.xPos = position[0]
@@ -149,7 +150,7 @@ class Bullet(pygame.sprite.Sprite):
 
     def collision(self):
         # Loop through the walls, if the bullet has collided with one, return True.
-        for wall in wallList:
+        for wall in wallGroup:
             if self.rect.colliderect(wall.rect):
                 return True
         return False
@@ -160,7 +161,7 @@ class Wall(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         # Add the wall to the wall list and sprite group.
-        wallList.append(self)
+        wallGroup.add(self)
         allSprites.add(self)
         self.colour = 100, 100, 100
         # Set the wall's rect based on tile size values stored in info.
@@ -174,6 +175,7 @@ class Enemy(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         # Add the enemy to the sprite group.
         allSprites.add(self)
+        enemyGroup.add(self)
         # Save an original version of the image for use in rotation (like the player).
         self.originalImage = i.enemyImage
         # Give the enemy a hit box, xPos and yPos assigned in the level building function.
@@ -189,11 +191,10 @@ class Enemy(pygame.sprite.Sprite):
 
     def update(self):
         # Loop through the bullets.
-        for bullet in bulletList:
+        for bullet in bulletGroup:
             # If a collision occurred:
             if self.hitBox.colliderect(bullet.rect):
-                # Delete the bullet & enemy from all groups and lists.
-                bulletList.remove(bullet)
+                # Delete the bullet & enemy from all groups.
                 bullet.kill()
                 self.kill()
         # Move and look if the wait timer has run out -- see self.turn()
@@ -236,7 +237,7 @@ class Enemy(pygame.sprite.Sprite):
         self.hitBox.y += velY
 
         # Loop through the walls.
-        for wall in wallList:
+        for wall in wallGroup:
             # If there is a collision:
             if self.hitBox.colliderect(wall.rect):
                 # Find which way the enemy is moving.

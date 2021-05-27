@@ -1,4 +1,5 @@
 import pygame
+import levels as l
 
 caption = "Bouncing Bullets"
 screenWidth = 1280
@@ -7,6 +8,7 @@ FPS = 60
 BGColour = (200, 200, 200)
 
 screen = pygame.display.set_mode((screenWidth, screenHeight))  # Sets resolution.
+currentLevel = l.level1
 
 playerImage = pygame.image.load("player.png")
 bulletImage = pygame.image.load("bullet.png")
