@@ -43,7 +43,7 @@ def level_build(level):
     x = 0
     y = 0
     for row in level:
-        # Each column (letter in string), move the X by the tile size. If W, spawn a wall.
+        # Each column (letter in string), move the X by the tile size. Spawn sprite instances according to letters (see level.py for key).
         for column in row:
             if column == "W":
                 s.Wall(x, y)
@@ -52,12 +52,19 @@ def level_build(level):
             if column == "P":
                 cameraInstance = Camera(i.currentLevel)
                 playerInstance = s.Player(x, y, cameraInstance)
+            if column == "S":
+                s.Start(x, y)
+            if column == "O":
+                s.Options(x, y)
+            if column == "Q":
+                s.Quit(x, y)
             x += i.tileWidth
         # Each row (string in list), reset the X to 0 and increase the Y by the tile size.
         x = 0
         y += i.tileHeight
 
 
+# Function for removing all sprites, effectively clearing the entire screen.
 def clear_level():
     for sprite in s.allSprites:
         sprite.kill()

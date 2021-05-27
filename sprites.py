@@ -1,12 +1,16 @@
 import pygame
+import sys
 import math
 import random
 import info as i
 
+# Groups used in the main loop for various identification purposes.
+# All groups (no lists) so that sprite.kill() removes a sprite from everything simultaneously.
 allSprites = pygame.sprite.Group()
 wallGroup = pygame.sprite.Group()
 bulletGroup = pygame.sprite.Group()
 enemyGroup = pygame.sprite.Group()
+startGroup = pygame.sprite.Group()
 
 
 class Player(pygame.sprite.Sprite):
@@ -264,3 +268,76 @@ class Enemy(pygame.sprite.Sprite):
         self.direction = random.choice(self.possibleDirections)
         # Add the old direction back to the list.
         self.possibleDirections.append(oldDirection)
+
+
+# Parent class for buttons.
+class Button(pygame.sprite.Sprite):
+
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        # Add the button to the sprite group.
+        allSprites.add(self)
+        # Boolean to determine whether the button is clicked.
+        self.clicked = False
+
+    def is_clicked(self):
+        # Checks whether the cursor is over the button. Gets called on the menu screen when the mouse button is clicked.
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            self.clicked = True
+
+
+# Child classes for each button type.
+class Start(Button):
+
+    # X and Y supplied by b.level_build().
+    def __init__(self, x, y):
+        super().__init__()
+        # Give the button an image & rect so it can be drawn.
+        self.image = i.startImage
+        self.rect = self.image.get_rect(topleft=(x, y))
+        # Start button needs to be accessible in the main loop, so put it in its own separate group.
+        startGroup.add(self)
+
+    def update(self):
+        # Change the button's colour if it's moused over.
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            self.image = i.startDark
+        else:
+            self.image = i.startImage
+
+
+class Options(Button):
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = i.optionsImage
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+    def update(self):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            self.image = i.optionsDark
+        else:
+            self.image = i.optionsImage
+        # Options menu will be added later.
+        if self.clicked:
+            print("options menu")
+
+
+class Quit(Button):
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = i.quitImage
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+    def update(self):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            self.image = i.quitDark
+        else:
+            self.image = i.quitImage
+        # Quits the game if clicked.
+        if self.clicked:
+            pygame.quit()
+            sys.exit()
+
+
