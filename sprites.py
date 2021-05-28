@@ -9,8 +9,12 @@ import info as i
 allSprites = pygame.sprite.Group()
 wallGroup = pygame.sprite.Group()
 bulletGroup = pygame.sprite.Group()
-enemyGroup = pygame.sprite.Group()
 startGroup = pygame.sprite.Group()
+
+# Groups only allow access to the self.rect.
+# Enemies have 2 rect attributes: a small one to detect collisions with bullets & walls, and a larger one for the torchlight surrounding them.
+# The enemies need to be in a list so that I can access their 2nd hit box, visionRect, to detect collision with the player.
+enemyList = []
 
 
 class Player(pygame.sprite.Sprite):
@@ -29,6 +33,12 @@ class Player(pygame.sprite.Sprite):
         self.hitBox = pygame.Rect(xPos, yPos, 50, 50)
         # Imported because some calculations require the camera's position.
         self.camera = camera
+        self.alive = True
+
+    def update(self):
+        self.get_keys()
+        self.look()
+        self.enemy_collide()
 
     def get_keys(self):
         # Calls the move method any time a key is pressed; send the appropriate move speed value.
@@ -41,10 +51,6 @@ class Player(pygame.sprite.Sprite):
             self.move(0, -i.moveSpeed)
         if key[pygame.K_s]:
             self.move(0, i.moveSpeed)
-
-    def update(self):
-        self.get_keys()
-        self.look()
 
     def look(self):
         # Get the mouse position.
@@ -96,6 +102,12 @@ class Player(pygame.sprite.Sprite):
         position = self.hitBox.center
         # Instantiate a bullet; pass it the position and direction values.
         Bullet(position, direction)
+
+    def enemy_collide(self):
+        # If the enemy walks into the enemy's torchlight, it's game over.
+        for enemy in enemyList:
+            if self.hitBox.colliderect(enemy.visionRect):
+                self.alive = False
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -179,14 +191,16 @@ class Enemy(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         # Add the enemy to the sprite group.
         allSprites.add(self)
-        enemyGroup.add(self)
+        enemyList.append(self)
         # Save an original version of the image for use in rotation (like the player).
         self.originalImage = i.enemyImage
         # Give the enemy a hit box, xPos and yPos assigned in the level building function.
-        self.hitBox = pygame.Rect(xPos, yPos, 200, 200)
+        self.hitBox = pygame.Rect(xPos, yPos, 80, 80)
         # The rotatable image & rect that will be used to draw the enemy.
         self.image = i.enemyImage
         self.rect = self.image.get_rect()
+        # Used for collision with the player (player should be detected if they touch the light around the enemy).
+        self.visionRect = pygame.Rect(xPos, yPos, 225, 225)
         # List of possible directions -- the enemy will only move up, down, left, or right.
         self.possibleDirections = [(0, 1), (1, 0), (0, -1), (-1, 0)]
         # Set the enemy's initial direction.
@@ -194,17 +208,20 @@ class Enemy(pygame.sprite.Sprite):
         self.canMove = 0
 
     def update(self):
+        # Use the smallest rect (hitBox) for bullet collisions -- the enemy shouldn't die if the bullet just hits its torchlight.
         # Loop through the bullets.
         for bullet in bulletGroup:
             # If a collision occurred:
             if self.hitBox.colliderect(bullet.rect):
                 # Delete the bullet & enemy from all groups.
                 bullet.kill()
+                enemyList.remove(self)
                 self.kill()
         # Move and look if the wait timer has run out -- see self.turn()
         if self.canMove <= pygame.time.get_ticks():
             self.move()
             self.look()
+        self.visionRect.center = self.hitBox.center
 
     def look(self):
         # Rotate the enemy's image based on its direction.
@@ -339,5 +356,3 @@ class Quit(Button):
         if self.clicked:
             pygame.quit()
             sys.exit()
-
-

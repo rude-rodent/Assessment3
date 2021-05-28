@@ -34,3 +34,10 @@ level2 = ["WWWWWWWWWWWWWWWW",
           "W              W",
           "W              W",
           "WWWWWWWWWWWWWWWW"]
+
+gameOver = ["          ",
+            "          ",
+            "          ",
+            "          ",
+            "          ",
+            "          "]

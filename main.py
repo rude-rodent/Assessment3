@@ -72,6 +72,11 @@ while running:
         s.allSprites.update()
         # Updates the camera's position based on the player.
         b.cameraInstance.update(b.playerInstance)
+        # Checks whether the player is alive; if not, sets up the game over stage.
+        if not b.playerInstance.alive:
+            i.currentLevel = l.gameOver
+            b.clear_level()
+            b.level_build(i.currentLevel)
         # Offsets the sprites relative to the camera's position.
         for sprite in s.allSprites:
             i.screen.blit(sprite.image, b.cameraInstance.offset(sprite))
@@ -79,7 +84,7 @@ while running:
         i.screen.blit(fps, (50, 50))
 
         # If no enemies remain, move to the next level.
-        if len(s.enemyGroup) == 0:
+        if len(s.enemyList) == 0:
             i.currentLevel = l.level2
             b.clear_level()
             b.level_build(i.currentLevel)
@@ -97,10 +102,17 @@ while running:
 
         s.allSprites.update()
         b.cameraInstance.update(b.playerInstance)
+        if not b.playerInstance.alive:
+            i.currentLevel = l.gameOver
+            b.clear_level()
+            b.level_build(i.currentLevel)
         for sprite in s.allSprites:
             i.screen.blit(sprite.image, b.cameraInstance.offset(sprite))
 
         i.screen.blit(fps, (50, 50))
+
+    if i.currentLevel == l.gameOver:
+        pass
 
     pygame.display.update()
     pygame.display.flip()  # 2 buffers: stuff that's going to draw, stuff that's already drawn. Flip turns the two.
