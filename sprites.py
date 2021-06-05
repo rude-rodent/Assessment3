@@ -11,6 +11,11 @@ wallGroup = pygame.sprite.Group()
 bulletGroup = pygame.sprite.Group()
 startGroup = pygame.sprite.Group()
 
+# Integers used to control which frame the player's animation is on. Must be global or they will be reset to 0 every time the function is called.
+idleCount = 0
+walkCount = 0
+shootCount = 0
+
 # Groups only allow access to the self.rect.
 # Enemies have 2 rect attributes: a small one to detect collisions with bullets & walls, and a larger one for the torchlight surrounding them.
 # The enemies need to be in a list so that I can access their 2nd hit box, visionRect, to detect collision with the player.
@@ -25,18 +30,22 @@ class Player(pygame.sprite.Sprite):
         allSprites.add(self)
         # Hit box of the player, used to move the sprite and detect collisions.
         # Original image kept to avoid distortion caused by rotating.
-        self.originalImage = i.playerImage
-        self.image = i.playerImage
+        self.originalImage = i.playerIdle[0]
+        self.image = i.playerIdle[0]
         # A rect is required for the sprite's draw() function.
-        self.rect = i.playerImage.get_rect()
+        self.rect = i.playerIdle[0].get_rect()
         # Hit box used to control movement and collisions.
         self.hitBox = pygame.Rect(xPos, yPos, 50, 50)
         # Imported because some calculations require the camera's position.
         self.camera = camera
         self.alive = True
+        self.walking = False
+        self.shooting = False
+        self.reloading = False
 
     def update(self):
         self.get_keys()
+        self.animation()
         self.look()
         self.enemy_collide()
 
@@ -45,12 +54,19 @@ class Player(pygame.sprite.Sprite):
         key = pygame.key.get_pressed()
         if key[pygame.K_a]:
             self.move(-i.moveSpeed, 0)
+            self.walking = True
         if key[pygame.K_d]:
             self.move(i.moveSpeed, 0)
+            self.walking = True
         if key[pygame.K_w]:
             self.move(0, -i.moveSpeed)
+            self.walking = True
         if key[pygame.K_s]:
             self.move(0, i.moveSpeed)
+            self.walking = True
+
+        if not key[pygame.K_a] and not key[pygame.K_d] and not key[pygame.K_w] and not key[pygame.K_s]:
+            self.walking = False
 
     def look(self):
         # Get the mouse position.
@@ -94,6 +110,7 @@ class Player(pygame.sprite.Sprite):
                     self.hitBox.top = wall.rect.bottom
 
     def fire(self):
+        self.shooting = True
         mouseX, mouseY = pygame.mouse.get_pos()
         # Use the mouse and player positions to create a Vector2 between them. Normalise the vector to remove magnitude.
         # Add player's position to camera's top left to keep the positions relative to the screen size.
@@ -108,6 +125,41 @@ class Player(pygame.sprite.Sprite):
         for enemy in enemyList:
             if self.hitBox.colliderect(enemy.visionRect):
                 self.alive = False
+
+    def animation(self):
+        global idleCount
+        global walkCount
+        global shootCount
+        if self.walking:
+            # If the counter is greater than the number of images in the list (5) * how long each image should be blit for (5 frames)...
+            if walkCount + 1 >= 25:
+                # Set the walk count back to 0, restarting the animation loop.
+                walkCount = 0
+            else:
+                # Otherwise, set the sprite's original image (so it can be rotated in self.look()) to the appropriate image in the animation.
+                # I'm int dividing the index by 5 because I want each image to be played for 5 frames before changing.
+                self.originalImage = i.playerWalk[walkCount//5]
+                walkCount += 1
+
+        # Identical code to the walking animation; this is for idling.
+        if not self.walking:
+            # This animation plays slower than walking, each image (5) being played for 12 frames.
+            if idleCount + 1 >= 60:
+                idleCount = 0
+            else:
+                self.originalImage = i.playerIdle[idleCount//12]
+                idleCount += 1
+
+        # This animation does NOT loop; it plays through once.
+        if self.shooting:
+            # This animation only has 3 images, and each image plays for 5 frames, so the counter can't exceed 15.
+            if shootCount + 1 >= 15:
+                # Set the condition that starts this animation to false, thereby stopping it from looping.
+                self.shooting = False
+                shootCount = 0
+            else:
+                self.originalImage = i.playerShoot[shootCount//5]
+                shootCount += 1
 
 
 class Bullet(pygame.sprite.Sprite):

@@ -11,7 +11,6 @@ screen = pygame.display.set_mode((screenWidth, screenHeight))  # Sets resolution
 currentLevel = l.menu  # Set to the first stage of the game (main menu).
 
 # Load all the images for the sprites.
-playerImage = pygame.image.load("player.png")
 bulletImage = pygame.image.load("bullet.png")
 enemyImage = pygame.image.load("enemy.png")
 startImage = pygame.image.load("start.png")
@@ -20,6 +19,15 @@ optionsImage = pygame.image.load("options.png")
 optionsDark = pygame.image.load("optionsdark.png")
 quitImage = pygame.image.load("quit.png")
 quitDark = pygame.image.load("quitdark.png")
+
+playerIdle = [pygame.image.load("Assets/Player/idle/1.png"), pygame.image.load("Assets/Player/idle/2.png"),
+              pygame.image.load("Assets/Player/idle/3.png"), pygame.image.load("Assets/Player/idle/4.png"),
+              pygame.image.load("Assets/Player/idle/5.png")]
+playerWalk = [pygame.image.load("Assets/Player/walk/1.png"), pygame.image.load("Assets/Player/walk/2.png"),
+              pygame.image.load("Assets/Player/walk/3.png"), pygame.image.load("Assets/Player/walk/4.png"),
+              pygame.image.load("Assets/Player/walk/5.png")]
+playerShoot = [pygame.image.load("Assets/Player/shoot/1.png"), pygame.image.load("Assets/Player/shoot/2.png"),
+               pygame.image.load("Assets/Player/shoot/3.png")]
 
 # Various values that can be tweaked.
 moveSpeed = 5
