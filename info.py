@@ -12,7 +12,6 @@ currentLevel = l.menu  # Set to the first stage of the game (main menu).
 
 # Load all the images for the sprites.
 bulletImage = pygame.image.load("bullet.png")
-enemyImage = pygame.image.load("enemy.png")
 startImage = pygame.image.load("start.png")
 startDark = pygame.image.load("startdark.png")
 optionsImage = pygame.image.load("options.png")
@@ -20,14 +19,14 @@ optionsDark = pygame.image.load("optionsdark.png")
 quitImage = pygame.image.load("quit.png")
 quitDark = pygame.image.load("quitdark.png")
 
-playerIdle = [pygame.image.load("Assets/Player/idle/1.png"), pygame.image.load("Assets/Player/idle/2.png"),
-              pygame.image.load("Assets/Player/idle/3.png"), pygame.image.load("Assets/Player/idle/4.png"),
-              pygame.image.load("Assets/Player/idle/5.png")]
-playerWalk = [pygame.image.load("Assets/Player/walk/1.png"), pygame.image.load("Assets/Player/walk/2.png"),
-              pygame.image.load("Assets/Player/walk/3.png"), pygame.image.load("Assets/Player/walk/4.png"),
-              pygame.image.load("Assets/Player/walk/5.png")]
-playerShoot = [pygame.image.load("Assets/Player/shoot/1.png"), pygame.image.load("Assets/Player/shoot/2.png"),
-               pygame.image.load("Assets/Player/shoot/3.png")]
+# List comprehension to load in the animation frames (they are saved as numbers in folders).
+playerIdle = [pygame.image.load("Assets/Player/idle/" + str(i + 1) + ".png") for i in range(5)]
+playerWalk = [pygame.image.load("Assets/Player/walk/" + str(i + 1) + ".png") for i in range(5)]
+playerShoot = [pygame.image.load("Assets/Player/shoot/" + str(i + 1) + ".png") for i in range(3)]
+
+enemyIdle = pygame.image.load("Assets/Guard/walk/1.png")
+enemyWalk = [pygame.image.load("Assets/Guard/walk/" + str(i + 1) + ".png") for i in range(10)]
+enemyDeath = [pygame.image.load("Assets/Guard/death/" + str(i + 1) + ".png") for i in range(4)]
 
 # Various values that can be tweaked.
 moveSpeed = 5

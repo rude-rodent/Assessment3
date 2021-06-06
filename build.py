@@ -37,8 +37,14 @@ class Camera:
 
 # Function for automatically building a level written as a list of strings.
 def level_build(level):
-    global cameraInstance
-    global playerInstance
+    # Functions separated like layers -- player will always be on top of enemies, which will always be on top of walls.
+    build_walls(level)
+    place_enemies(level)
+    place_player(level)
+    place_buttons(level)
+
+
+def build_walls(level):
     # X and y positions to feed into Wall()
     x = 0
     y = 0
@@ -47,11 +53,48 @@ def level_build(level):
         for column in row:
             if column == "W":
                 s.Wall(x, y)
+            x += i.tileWidth
+        # Each row (string in list), reset the X to 0 and increase the Y by the tile size.
+        x = 0
+        y += i.tileHeight
+
+
+# Same code as build_walls()
+def place_enemies(level):
+    x = 0
+    y = 0
+    for row in level:
+        for column in row:
             if column == "E":
                 s.Enemy(x, y)
+            x += i.tileWidth
+        x = 0
+        y += i.tileHeight
+
+
+# Same code as build_walls()
+def place_player(level):
+    # Using global variables so the camera & player instances can be altered in the main loop.
+    global cameraInstance
+    global playerInstance
+    x = 0
+    y = 0
+    for row in level:
+        for column in row:
             if column == "P":
-                cameraInstance = Camera(i.currentLevel)
+                cameraInstance = Camera(level)
                 playerInstance = s.Player(x, y, cameraInstance)
+            x += i.tileWidth
+        x = 0
+        y += i.tileHeight
+
+
+# Same code as build_walls()
+def place_buttons(level):
+    x = 0
+    y = 0
+    for row in level:
+        for column in row:
             if column == "S":
                 s.Start(x, y)
             if column == "O":
@@ -59,7 +102,6 @@ def level_build(level):
             if column == "Q":
                 s.Quit(x, y)
             x += i.tileWidth
-        # Each row (string in list), reset the X to 0 and increase the Y by the tile size.
         x = 0
         y += i.tileHeight
 

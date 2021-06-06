@@ -123,7 +123,7 @@ class Player(pygame.sprite.Sprite):
     def enemy_collide(self):
         # If the enemy walks into the enemy's torchlight, it's game over.
         for enemy in enemyList:
-            if self.hitBox.colliderect(enemy.visionRect):
+            if self.hitBox.colliderect(enemy.visionRect) and enemy.alive:
                 self.alive = False
 
     def animation(self):
@@ -245,11 +245,11 @@ class Enemy(pygame.sprite.Sprite):
         allSprites.add(self)
         enemyList.append(self)
         # Save an original version of the image for use in rotation (like the player).
-        self.originalImage = i.enemyImage
+        self.originalImage = i.enemyIdle
         # Give the enemy a hit box, xPos and yPos assigned in the level building function.
         self.hitBox = pygame.Rect(xPos, yPos, 80, 80)
         # The rotatable image & rect that will be used to draw the enemy.
-        self.image = i.enemyImage
+        self.image = i.enemyIdle
         self.rect = self.image.get_rect()
         # Used for collision with the player (player should be detected if they touch the light around the enemy).
         self.visionRect = pygame.Rect(xPos, yPos, 225, 225)
@@ -258,22 +258,33 @@ class Enemy(pygame.sprite.Sprite):
         # Set the enemy's initial direction.
         self.direction = random.choice(self.possibleDirections)
         self.canMove = 0
+        self.walking = False
+        self.alive = True
+        self.walkCount = 0
+        self.deathCount = 0
 
     def update(self):
-        # Use the smallest rect (hitBox) for bullet collisions -- the enemy shouldn't die if the bullet just hits its torchlight.
-        # Loop through the bullets.
-        for bullet in bulletGroup:
-            # If a collision occurred:
-            if self.hitBox.colliderect(bullet.rect):
-                # Delete the bullet & enemy from all groups.
-                bullet.kill()
-                enemyList.remove(self)
-                self.kill()
-        # Move and look if the wait timer has run out -- see self.turn()
-        if self.canMove <= pygame.time.get_ticks():
-            self.move()
+        self.animation()
+        if self.alive:
+            # Use the smallest rect (hitBox) for bullet collisions -- the enemy shouldn't die if the bullet just hits its torchlight.
+            # Loop through the bullets.
+            for bullet in bulletGroup:
+                # If a collision occurred:
+                if self.hitBox.colliderect(bullet.rect):
+                    # Delete the bullet & enemy from all groups.
+                    bullet.kill()
+                    self.alive = False
+                    enemyList.remove(self)
+            # Move and look if the wait timer has run out -- see self.turn()
+            if self.canMove <= pygame.time.get_ticks():
+                self.walking = True
+                self.move()
+                self.look()
+            else:
+                self.walking = False
+            self.visionRect.center = self.hitBox.center
+        else:
             self.look()
-        self.visionRect.center = self.hitBox.center
 
     def look(self):
         # Rotate the enemy's image based on its direction.
@@ -337,6 +348,26 @@ class Enemy(pygame.sprite.Sprite):
         self.direction = random.choice(self.possibleDirections)
         # Add the old direction back to the list.
         self.possibleDirections.append(oldDirection)
+
+    def animation(self):
+
+        if not self.alive:
+            if self.deathCount >= 24:
+                self.originalImage = i.enemyDeath[3]
+            else:
+                self.originalImage = i.enemyDeath[self.deathCount//6]
+                self.deathCount += 1
+        else:
+            if self.walking:
+                # If the counter is greater than the number of images in the list (5) * how long each image should be blit for (5 frames)...
+                if self.walkCount + 1 >= 200:
+                    # Set the walk count back to 0, restarting the animation loop.
+                    self.walkCount = 0
+                else:
+                    # Otherwise, set the sprite's original image (so it can be rotated in self.look()) to the appropriate image in the animation.
+                    # I'm int dividing the index by 5 because I want each image to be played for 5 frames before changing.
+                    self.originalImage = i.enemyWalk[self.walkCount//20]
+                    self.walkCount += 1
 
 
 # Parent class for buttons.
