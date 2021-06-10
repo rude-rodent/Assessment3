@@ -110,3 +110,5 @@ def place_buttons(level):
 def clear_level():
     for sprite in s.allSprites:
         sprite.kill()
+    s.enemyList = []
+    s.aliveEnemyList = []

@@ -15,10 +15,13 @@ startGroup = pygame.sprite.Group()
 idleCount = 0
 walkCount = 0
 shootCount = 0
+reloadCount = 0
 
 # Groups only allow access to the self.rect.
 # Enemies have 2 rect attributes: a small one to detect collisions with bullets & walls, and a larger one for the torchlight surrounding them.
 # The enemies need to be in a list so that I can access their 2nd hit box, visionRect, to detect collision with the player.
+# 2 enemy groups so only alive enemies can collide with the player, but dead enemies can still be detected by alive enemies.
+aliveEnemyList = []
 enemyList = []
 
 
@@ -38,6 +41,9 @@ class Player(pygame.sprite.Sprite):
         self.hitBox = pygame.Rect(xPos, yPos, 50, 50)
         # Imported because some calculations require the camera's position.
         self.camera = camera
+        # Number of bullets in the player's magazine.
+        self.magazine = 6
+        # Booleans for animations.
         self.alive = True
         self.walking = False
         self.shooting = False
@@ -67,6 +73,9 @@ class Player(pygame.sprite.Sprite):
 
         if not key[pygame.K_a] and not key[pygame.K_d] and not key[pygame.K_w] and not key[pygame.K_s]:
             self.walking = False
+
+        if key[pygame.K_r]:
+            self.reloading = True
 
     def look(self):
         # Get the mouse position.
@@ -110,26 +119,41 @@ class Player(pygame.sprite.Sprite):
                     self.hitBox.top = wall.rect.bottom
 
     def fire(self):
-        self.shooting = True
-        mouseX, mouseY = pygame.mouse.get_pos()
-        # Use the mouse and player positions to create a Vector2 between them. Normalise the vector to remove magnitude.
-        # Add player's position to camera's top left to keep the positions relative to the screen size.
-        direction = pygame.math.Vector2(mouseX - (self.hitBox.centerx + self.camera.rect.x), mouseY - (self.hitBox.centery + self.camera.rect.y)).normalize()
-        # Position of the player.
-        position = self.hitBox.center
-        # Instantiate a bullet; pass it the position and direction values.
-        Bullet(position, direction)
+        # If player is dead, reloadOrRestartText will show the restart message (that takes priority).
+        if self.alive:
+            if self.magazine >= 1:
+                # Magazine is not empty; don't display reload text.
+                i.reloadOrRestartText = ""
+                self.shooting = True
+                mouseX, mouseY = pygame.mouse.get_pos()
+                # Use the mouse and player positions to create a Vector2 between them. Normalise the vector to remove magnitude.
+                # Add player's position to camera's top left to keep the positions relative to the screen size.
+                direction = pygame.math.Vector2(mouseX - (self.hitBox.centerx + self.camera.rect.x), mouseY - (self.hitBox.centery + self.camera.rect.y)).normalize()
+                # Position of the player.
+                position = self.hitBox.center
+                # Instantiate a bullet; pass it the position and direction values.
+                Bullet(position, direction)
+                # Remove one bullet from the magazine.
+                self.magazine -= 1
+                # Remove 5 from the total score (score starts at 1000 and decreases with time and with each bullet fired).
+                i.score -= 5
+            # If the magazine is empty, display the reload text.
+            else:
+                i.reloadOrRestartText = "R to reload!"
 
     def enemy_collide(self):
         # If the enemy walks into the enemy's torchlight, it's game over.
-        for enemy in enemyList:
+        for enemy in aliveEnemyList:
             if self.hitBox.colliderect(enemy.visionRect) and enemy.alive:
+                # If player dies, display the restart text.
+                i.reloadOrRestartText = "R to restart!"
                 self.alive = False
 
     def animation(self):
         global idleCount
         global walkCount
         global shootCount
+        global reloadCount
         if self.walking:
             # If the counter is greater than the number of images in the list (5) * how long each image should be blit for (5 frames)...
             if walkCount + 1 >= 25:
@@ -160,6 +184,16 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.originalImage = i.playerShoot[shootCount//5]
                 shootCount += 1
+
+        if self.reloading:
+            if reloadCount + 1 >= 24:
+                self.reloading = False
+                # Set the magazine size back to 6 after the reload animation has played fully.
+                self.magazine = 6
+                reloadCount = 0
+            else:
+                self.originalImage = i.playerReload[reloadCount//3]
+                reloadCount += 1
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -244,6 +278,7 @@ class Enemy(pygame.sprite.Sprite):
         # Add the enemy to the sprite group.
         allSprites.add(self)
         enemyList.append(self)
+        aliveEnemyList.append(self)
         # Save an original version of the image for use in rotation (like the player).
         self.originalImage = i.enemyIdle
         # Give the enemy a hit box, xPos and yPos assigned in the level building function.
@@ -274,7 +309,7 @@ class Enemy(pygame.sprite.Sprite):
                     # Delete the bullet & enemy from all groups.
                     bullet.kill()
                     self.alive = False
-                    enemyList.remove(self)
+                    aliveEnemyList.remove(self)
             # Move and look if the wait timer has run out -- see self.turn()
             if self.canMove <= pygame.time.get_ticks():
                 self.walking = True
@@ -336,6 +371,13 @@ class Enemy(pygame.sprite.Sprite):
                     self.hitBox.top = wall.rect.bottom + i.enemySpeed
                 # Make the enemy change direction.
                 self.turn()
+
+        # If a guard's torchlight touches a dead guard, they will raise the alarm and the game will end.
+        for enemy in enemyList:
+            if self.visionRect.colliderect(enemy.hitBox):
+                if not enemy.alive:
+                    pass
+                    # GAME OVER STATE.
 
     def turn(self):
         # Sets a timer that stops the enemy from moving for 1.5 seconds.
@@ -401,7 +443,7 @@ class Start(Button):
     def update(self):
         # Change the button's colour if it's moused over.
         if self.rect.collidepoint(pygame.mouse.get_pos()):
-            self.image = i.startDark
+            self.image = i.startHover
         else:
             self.image = i.startImage
 
@@ -415,7 +457,7 @@ class Options(Button):
 
     def update(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
-            self.image = i.optionsDark
+            self.image = i.optionsHover
         else:
             self.image = i.optionsImage
         # Options menu will be added later.
@@ -432,7 +474,7 @@ class Quit(Button):
 
     def update(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
-            self.image = i.quitDark
+            self.image = i.quitHover
         else:
             self.image = i.quitImage
         # Quits the game if clicked.
