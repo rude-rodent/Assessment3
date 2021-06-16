@@ -21,8 +21,10 @@ reloadCount = 0
 # Enemies have 2 rect attributes: a small one to detect collisions with bullets & walls, and a larger one for the torchlight surrounding them.
 # The enemies need to be in a list so that I can access their 2nd hit box, visionRect, to detect collision with the player.
 # 2 enemy groups so only alive enemies can collide with the player, but dead enemies can still be detected by alive enemies.
+# Also need access to bullet's invincibilityFrames variable.
 aliveEnemyList = []
 enemyList = []
+bulletList = []
 
 
 class Player(pygame.sprite.Sprite):
@@ -37,6 +39,7 @@ class Player(pygame.sprite.Sprite):
         self.image = i.playerIdle[0]
         # A rect is required for the sprite's draw() function.
         self.rect = i.playerIdle[0].get_rect()
+        self.actionPoint = pygame.Rect(80, 55, 1, 1)
         # Hit box used to control movement and collisions.
         self.hitBox = pygame.Rect(xPos, yPos, 50, 50)
         # Imported because some calculations require the camera's position.
@@ -54,6 +57,8 @@ class Player(pygame.sprite.Sprite):
         self.animation()
         self.look()
         self.enemy_collide()
+        self.bullet_collide()
+        self.check_magazine()
 
     def get_keys(self):
         # Calls the move method any time a key is pressed; send the appropriate move speed value.
@@ -81,7 +86,8 @@ class Player(pygame.sprite.Sprite):
         # Get the mouse position.
         mouseX, mouseY = pygame.mouse.get_pos()
         # Calculate the vector between the player and mouse. Add the player's hit box to the camera's top left coordinates to keep the position relative to the screen.
-        relativeX, relativeY = mouseX - (self.hitBox.centerx + self.camera.rect.x), mouseY - (self.hitBox.centery + self.camera.rect.y)
+        relativeX, relativeY = mouseX - (self.hitBox.centerx + self.camera.rect.x), mouseY - (
+                    self.hitBox.centery + self.camera.rect.y)
         # Convert the vector into an angle (in radians). Must be inverted.
         radAngle = -math.atan2(relativeY, relativeX)
         # Convert the angle into degrees.
@@ -90,6 +96,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.originalImage, int(degAngle))
         # Create a rect of the rotated image; its center is the center of a rect of the original image; its center is the player's position.
         self.rect = self.image.get_rect(center=(self.hitBox.centerx, self.hitBox.centery))
+        # self.actionPoint = pygame.transform.rotate(pygame.Rect(80 + self.rect.x, 55 + self.rect.y, 1, 1), int(degAngle))
 
     def move(self, velX, velY):
         # Perfect collisions aren't needed here as the player is large and moves slowly.
@@ -118,17 +125,26 @@ class Player(pygame.sprite.Sprite):
                 if velY < 0:
                     self.hitBox.top = wall.rect.bottom
 
+    def check_magazine(self):
+        if self.magazine >= 1:
+            # Magazine is not empty; don't display reload text.
+            i.reloadOrRestartText = ""
+        # If magazine is empty, display reload prompt.
+        else:
+            # Don't overwrite "R to restart!"; that takes priority.
+            if i.reloadOrRestartText == "":
+                i.reloadOrRestartText = "R to reload!"
+
     def fire(self):
         # If player is dead, reloadOrRestartText will show the restart message (that takes priority).
         if self.alive:
             if self.magazine >= 1:
-                # Magazine is not empty; don't display reload text.
-                i.reloadOrRestartText = ""
                 self.shooting = True
                 mouseX, mouseY = pygame.mouse.get_pos()
                 # Use the mouse and player positions to create a Vector2 between them. Normalise the vector to remove magnitude.
                 # Add player's position to camera's top left to keep the positions relative to the screen size.
-                direction = pygame.math.Vector2(mouseX - (self.hitBox.centerx + self.camera.rect.x), mouseY - (self.hitBox.centery + self.camera.rect.y)).normalize()
+                direction = pygame.math.Vector2(mouseX - (self.hitBox.centerx + self.camera.rect.x),
+                                                mouseY - (self.hitBox.centery + self.camera.rect.y)).normalize()
                 # Position of the player.
                 position = self.hitBox.center
                 # Instantiate a bullet; pass it the position and direction values.
@@ -137,17 +153,22 @@ class Player(pygame.sprite.Sprite):
                 self.magazine -= 1
                 # Remove 5 from the total score (score starts at 1000 and decreases with time and with each bullet fired).
                 i.score -= 5
-            # If the magazine is empty, display the reload text.
-            else:
-                i.reloadOrRestartText = "R to reload!"
 
     def enemy_collide(self):
         # If the enemy walks into the enemy's torchlight, it's game over.
         for enemy in aliveEnemyList:
             if self.hitBox.colliderect(enemy.visionRect) and enemy.alive:
-                # If player dies, display the restart text.
-                i.reloadOrRestartText = "R to restart!"
                 self.alive = False
+
+    def bullet_collide(self):
+        # Check if the player collided with any bullets.
+        for bullet in bulletList:
+            if self.hitBox.colliderect(bullet.rect):
+                # The bullet can only kill the player if it's bounced at least one time.
+                # Because it's instantiated from the center of the player's hit box; it would immediately collide with & kill the player.
+                if bullet.bounces >= 1:
+                    bullet.alive = False
+                    self.alive = False
 
     def animation(self):
         global idleCount
@@ -162,7 +183,7 @@ class Player(pygame.sprite.Sprite):
             else:
                 # Otherwise, set the sprite's original image (so it can be rotated in self.look()) to the appropriate image in the animation.
                 # I'm int dividing the index by 5 because I want each image to be played for 5 frames before changing.
-                self.originalImage = i.playerWalk[walkCount//5]
+                self.originalImage = i.playerWalk[walkCount // 5]
                 walkCount += 1
 
         # Identical code to the walking animation; this is for idling.
@@ -171,7 +192,7 @@ class Player(pygame.sprite.Sprite):
             if idleCount + 1 >= 60:
                 idleCount = 0
             else:
-                self.originalImage = i.playerIdle[idleCount//12]
+                self.originalImage = i.playerIdle[idleCount // 12]
                 idleCount += 1
 
         # This animation does NOT loop; it plays through once.
@@ -182,7 +203,7 @@ class Player(pygame.sprite.Sprite):
                 self.shooting = False
                 shootCount = 0
             else:
-                self.originalImage = i.playerShoot[shootCount//5]
+                self.originalImage = i.playerShoot[shootCount // 5]
                 shootCount += 1
 
         if self.reloading:
@@ -192,7 +213,7 @@ class Player(pygame.sprite.Sprite):
                 self.magazine = 6
                 reloadCount = 0
             else:
-                self.originalImage = i.playerReload[reloadCount//3]
+                self.originalImage = i.playerReload[reloadCount // 3]
                 reloadCount += 1
 
 
@@ -203,15 +224,7 @@ class Bullet(pygame.sprite.Sprite):
         # Add the bullet to the sprite group.
         allSprites.add(self)
         bulletGroup.add(self)
-        # To avoid lag/chaos, a limited number of bullets are allowed on screen.
-        # Check the # of bullets, if > 10, set the oldest bullet's "alive" bool to false.
-        if len(bulletGroup) > i.maxBullets:
-            bulletGroup.sprites()[0].alive = False
-        # Go through the bulletList and delete any bullets with alive = false. Also delete from the sprite group.
-        for bullet in bulletGroup:
-            if not bullet.alive:
-                bulletGroup.remove(bullet)
-                allSprites.remove(bullet)
+        bulletList.append(self)
         # The x and y values from the position tuple.
         self.xPos = position[0]
         self.yPos = position[1]
@@ -222,11 +235,15 @@ class Bullet(pygame.sprite.Sprite):
         # The direction, a Vector2.
         self.direction = direction
         self.alive = True
-
+        self.bounces = 0
 
     def update(self):
+        self.check_alive()
+        self.move()
         # Movement with perfect collisions.
         # Loop this a number of times equal to the desired bullet speed.
+
+    def move(self):
         for num in range(i.playerBulletSpeed):
             # Move along the X axis by an amount specified in the direction (normalised vector).
             self.xPos += self.direction.x
@@ -240,6 +257,8 @@ class Bullet(pygame.sprite.Sprite):
                 self.rect.x -= 1
                 # Reverse the x component of the hit box's direction (because it hit the left/right side of a wall); makes the bullet bounce.
                 self.direction.x *= -1
+                # Increase the number of bounces.
+                self.bounces += 1
         # Do the same for the y axis.
         for num in range(i.playerBulletSpeed):
             self.yPos += + self.direction.y
@@ -248,7 +267,7 @@ class Bullet(pygame.sprite.Sprite):
             if self.collision():
                 self.rect.y -= 1
                 self.direction.y *= -1
-
+                self.bounces += 1
 
     def collision(self):
         # Loop through the walls, if the bullet has collided with one, return True.
@@ -256,6 +275,21 @@ class Bullet(pygame.sprite.Sprite):
             if self.rect.colliderect(wall.rect):
                 return True
         return False
+
+    def check_alive(self):
+        # Bullets only bounce 3 times before being destroyed.
+        if self.bounces >= 3:
+            self.alive = False
+        # To avoid lag/chaos, a limited number of bullets are allowed on screen.
+        # Check the # of bullets, if > 10, set the oldest bullet's "alive" bool to false.
+        if len(bulletGroup) > i.maxBullets:
+            bulletGroup.sprites()[0].alive = False
+        # Go through the bulletList and delete any bullets with alive = false. Also delete from the sprite group.
+        for bullet in bulletGroup:
+            if not bullet.alive:
+                bulletGroup.remove(bullet)
+                allSprites.remove(bullet)
+                bulletList.remove(bullet)
 
 
 class Wall(pygame.sprite.Sprite):
@@ -397,7 +431,7 @@ class Enemy(pygame.sprite.Sprite):
             if self.deathCount >= 24:
                 self.originalImage = i.enemyDeath[3]
             else:
-                self.originalImage = i.enemyDeath[self.deathCount//6]
+                self.originalImage = i.enemyDeath[self.deathCount // 6]
                 self.deathCount += 1
         else:
             if self.walking:
@@ -408,7 +442,7 @@ class Enemy(pygame.sprite.Sprite):
                 else:
                     # Otherwise, set the sprite's original image (so it can be rotated in self.look()) to the appropriate image in the animation.
                     # I'm int dividing the index by 5 because I want each image to be played for 5 frames before changing.
-                    self.originalImage = i.enemyWalk[self.walkCount//20]
+                    self.originalImage = i.enemyWalk[self.walkCount // 20]
                     self.walkCount += 1
 
 

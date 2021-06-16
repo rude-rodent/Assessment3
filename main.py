@@ -88,6 +88,9 @@ while running:
         s.allSprites.update()
         # Updates the camera's position based on the player.
         b.cameraInstance.update(b.playerInstance)
+        # Adds the restart text if the player is dead.
+        if not b.playerInstance.alive:
+            i.reloadOrRestartText = "R to restart!"
         # Update the reload or restart display once the sprites have been updated.
         reloadOrRestartDisplay = font.render(i.reloadOrRestartText, True, pygame.Color('white'))
 

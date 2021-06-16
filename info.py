@@ -11,13 +11,13 @@ screen = pygame.display.set_mode((screenWidth, screenHeight))  # Sets resolution
 currentLevel = l.menu  # Set to the first stage of the game (main menu).
 
 # Load all the images for the sprites.
-bulletImage = pygame.image.load("bullet.png")
-startImage = pygame.image.load("start.png")
-startHover = pygame.image.load("startdark.png")
-optionsImage = pygame.image.load("options.png")
-optionsHover = pygame.image.load("optionsdark.png")
-quitImage = pygame.image.load("quit.png")
-quitHover = pygame.image.load("quitdark.png")
+bulletImage = pygame.image.load("Assets/Player/bullet.png")
+startImage = pygame.image.load("Assets/UI/start.png")
+startHover = pygame.image.load("Assets/UI/startHover.png")
+optionsImage = pygame.image.load("Assets/UI/options.png")
+optionsHover = pygame.image.load("Assets/UI/optionsHover.png")
+quitImage = pygame.image.load("Assets/UI/quit.png")
+quitHover = pygame.image.load("Assets/UI/quitHover.png")
 
 # List comprehension to load in the animation frames (they are saved as numbers in folders).
 playerIdle = [pygame.image.load("Assets/Player/idle/" + str(i + 1) + ".png") for i in range(5)]
