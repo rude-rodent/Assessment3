@@ -6,23 +6,31 @@
 
 # All lists are used in build.level_build().
 menu = ["          ",
-        "    S     ",
-        "    O     ",
-        "    Q     ",
-        "          ",
+        "     S    ",
+        "     O    ",
+        "     ?    ",
+        "     Q    ",
         "          "]
+
+howToPlay = [" I        ",
+             "          ",
+             "          ",
+             "          ",
+             "          ",
+             "          ",
+             "     S    "]
 
 level1 = ["WWWWWWWWWWWWWWWWWWWWW",
           "W P        W  W     W",
           "W          W  W     W",
-          "W          W  W  E  W",
+          "W          V  W  E  W",
           "W    E     W  W     W",
           "W          W  W     W",
           "W          W  W     W",
           "W          W  W     W",
           "W               E   W",
           "W                   W",
-          "W  E                W",
+          "W  E        WWWWHWWWW",
           "W                   W",
           "WWWWWWWWWWWWWWWWWWWWW"]
 

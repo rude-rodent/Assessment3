@@ -8,8 +8,11 @@ import info as i
 # All groups (no lists) so that sprite.kill() removes a sprite from everything simultaneously.
 allSprites = pygame.sprite.Group()
 wallGroup = pygame.sprite.Group()
+obstacleGroup = pygame.sprite.Group()
 bulletGroup = pygame.sprite.Group()
+buttonGroup = pygame.sprite.Group()
 startGroup = pygame.sprite.Group()
+howToPlayGroup = pygame.sprite.Group()
 
 # Integers used to control which frame the player's animation is on. Must be global or they will be reset to 0 every time the function is called.
 idleCount = 0
@@ -21,7 +24,7 @@ reloadCount = 0
 # Enemies have 2 rect attributes: a small one to detect collisions with bullets & walls, and a larger one for the torchlight surrounding them.
 # The enemies need to be in a list so that I can access their 2nd hit box, visionRect, to detect collision with the player.
 # 2 enemy groups so only alive enemies can collide with the player, but dead enemies can still be detected by alive enemies.
-# Also need access to bullet's invincibilityFrames variable.
+# Also need access to bullet's number of bounces.
 aliveEnemyList = []
 enemyList = []
 bulletList = []
@@ -39,7 +42,6 @@ class Player(pygame.sprite.Sprite):
         self.image = i.playerIdle[0]
         # A rect is required for the sprite's draw() function.
         self.rect = i.playerIdle[0].get_rect()
-        self.actionPoint = pygame.Rect(80, 55, 1, 1)
         # Hit box used to control movement and collisions.
         self.hitBox = pygame.Rect(xPos, yPos, 50, 50)
         # Imported because some calculations require the camera's position.
@@ -86,8 +88,7 @@ class Player(pygame.sprite.Sprite):
         # Get the mouse position.
         mouseX, mouseY = pygame.mouse.get_pos()
         # Calculate the vector between the player and mouse. Add the player's hit box to the camera's top left coordinates to keep the position relative to the screen.
-        relativeX, relativeY = mouseX - (self.hitBox.centerx + self.camera.rect.x), mouseY - (
-                    self.hitBox.centery + self.camera.rect.y)
+        relativeX, relativeY = mouseX - (self.hitBox.centerx + self.camera.rect.x), mouseY - (self.hitBox.centery + self.camera.rect.y)
         # Convert the vector into an angle (in radians). Must be inverted.
         radAngle = -math.atan2(relativeY, relativeX)
         # Convert the angle into degrees.
@@ -96,7 +97,6 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.originalImage, int(degAngle))
         # Create a rect of the rotated image; its center is the center of a rect of the original image; its center is the player's position.
         self.rect = self.image.get_rect(center=(self.hitBox.centerx, self.hitBox.centery))
-        # self.actionPoint = pygame.transform.rotate(pygame.Rect(80 + self.rect.x, 55 + self.rect.y, 1, 1), int(degAngle))
 
     def move(self, velX, velY):
         # Perfect collisions aren't needed here as the player is large and moves slowly.
@@ -111,19 +111,19 @@ class Player(pygame.sprite.Sprite):
         self.hitBox.x += velX
         self.hitBox.y += velY
 
-        for wall in wallGroup:
+        for obstacle in obstacleGroup:
             # Check for collisions with any walls.
-            if self.hitBox.colliderect(wall.rect):
+            if self.hitBox.colliderect(obstacle.rect):
                 # If a collision is detected, check which way the player was moving when it happened.
                 if velX > 0:
                     # If the player was moving right, move their hit box to the left side of the wall.
-                    self.hitBox.right = wall.rect.left
+                    self.hitBox.right = obstacle.rect.left
                 if velX < 0:
-                    self.hitBox.left = wall.rect.right
+                    self.hitBox.left = obstacle.rect.right
                 if velY > 0:
-                    self.hitBox.bottom = wall.rect.top
+                    self.hitBox.bottom = obstacle.rect.top
                 if velY < 0:
-                    self.hitBox.top = wall.rect.bottom
+                    self.hitBox.top = obstacle.rect.bottom
 
     def check_magazine(self):
         if self.magazine >= 1:
@@ -296,13 +296,51 @@ class Wall(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        # Add the wall to the wall list and sprite group.
+        # Add the wall to the wall group, obstacle group, and sprite group.
         wallGroup.add(self)
+        obstacleGroup.add(self)
         allSprites.add(self)
-        self.colour = 100, 100, 100
         # Set the wall's rect based on tile size values stored in info.
         self.rect = pygame.Rect(x, y, i.tileWidth, i.tileHeight)
-        self.image = pygame.Surface((i.tileWidth, i.tileHeight))
+        self.image = i.wallImage
+
+
+class Door(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, axis):
+        pygame.sprite.Sprite.__init__(self)
+        # Add to the obstacle group and sprite group.
+        obstacleGroup.add(self)
+        allSprites.add(self)
+        # The axis will be the orientation of the door (horizontal or vertical).
+        self.axis = axis
+        self.rect = pygame.Rect(x, y, i.tileWidth, i.tileHeight)
+        # Doors have a different sprite depending on their axis.
+        if self.axis == "hor":
+            self.image = i.doorHorImage
+        elif self.axis == "ver":
+            self.image = i.doorVerImage
+
+    def update(self):
+        self.door_break_check()
+
+    def door_break_check(self):
+        # Loop through the bullets, check for a collision.
+        for bullet in bulletList:
+            if self.rect.colliderect(bullet.rect):
+                # Kill the bullet.
+                bullet.alive = False
+                # Open the door.
+                self.door_open()
+                # Remove the door from the obstacle group; the player and enemies can now walk through it.
+                obstacleGroup.remove(self)
+
+    def door_open(self):
+        # Update the door's image to a broken version of it.
+        if self.axis == "hor":
+            self.image = i.doorHorBrokenImage
+        elif self.axis == "ver":
+            self.image = i.doorVerBrokenImage
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -337,11 +375,11 @@ class Enemy(pygame.sprite.Sprite):
         if self.alive:
             # Use the smallest rect (hitBox) for bullet collisions -- the enemy shouldn't die if the bullet just hits its torchlight.
             # Loop through the bullets.
-            for bullet in bulletGroup:
+            for bullet in bulletList:
                 # If a collision occurred:
                 if self.hitBox.colliderect(bullet.rect):
-                    # Delete the bullet & enemy from all groups.
-                    bullet.kill()
+                    # Delete enemy from all groups, set the bullet's alive status to false.
+                    bullet.alive = False
                     self.alive = False
                     aliveEnemyList.remove(self)
             # Move and look if the wait timer has run out -- see self.turn()
@@ -390,19 +428,19 @@ class Enemy(pygame.sprite.Sprite):
         self.hitBox.y += velY
 
         # Loop through the walls.
-        for wall in wallGroup:
+        for obstacle in obstacleGroup:
             # If there is a collision:
-            if self.hitBox.colliderect(wall.rect):
+            if self.hitBox.colliderect(obstacle.rect):
                 # Find which way the enemy is moving.
                 if velX > 0:
                     # Push the enemy's hit box out of the wall.
-                    self.hitBox.right = wall.rect.left - i.enemySpeed
+                    self.hitBox.right = obstacle.rect.left - i.enemySpeed
                 if velX < 0:
-                    self.hitBox.left = wall.rect.right + i.enemySpeed
+                    self.hitBox.left = obstacle.rect.right + i.enemySpeed
                 if velY > 0:
-                    self.hitBox.bottom = wall.rect.top - i.enemySpeed
+                    self.hitBox.bottom = obstacle.rect.top - i.enemySpeed
                 if velY < 0:
-                    self.hitBox.top = wall.rect.bottom + i.enemySpeed
+                    self.hitBox.top = obstacle.rect.bottom + i.enemySpeed
                 # Make the enemy change direction.
                 self.turn()
 
@@ -453,6 +491,7 @@ class Button(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         # Add the button to the sprite group.
         allSprites.add(self)
+        buttonGroup.add(self)
         # Boolean to determine whether the button is clicked.
         self.clicked = False
 
@@ -513,5 +552,32 @@ class Quit(Button):
             self.image = i.quitImage
         # Quits the game if clicked.
         if self.clicked:
+            pygame.display.quit()
             pygame.quit()
             sys.exit()
+
+
+class HowToPlay(Button):
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = i.howToPlayImage
+        self.rect = self.image.get_rect(topleft=(x, y))
+        # This button's functionality on click needs to be determined in the main loop, so add it to a group we can access there.
+        howToPlayGroup.add(self)
+
+    def update(self):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            self.image = i.howToPlayHover
+        else:
+            self.image = i.howToPlayImage
+
+
+class Instructions(pygame.sprite.Sprite):
+
+    # The instructions are displayed in a simple image; no functionality needed here besides the built-in sprite blit.
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        allSprites.add(self)
+        self.image = i.instructionsImage
+        self.rect = self.image.get_rect(topleft=(x, y))

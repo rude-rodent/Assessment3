@@ -31,6 +31,8 @@ while running:
     # Fill the screen with the background colour.
     i.screen.fill(i.BGColour)
 
+# # # # # # # # # # # # # # # # # # # # # MAIN MENU # # # # # # # # # # # # # # # # # # # # #
+
     # During the main menu.
     if i.currentLevel == l.menu:
         # Check different button presses.
@@ -44,7 +46,7 @@ while running:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     # Check if the user clicked on a button.
-                    for button in s.allSprites:
+                    for button in s.buttonGroup:
                         button.is_clicked()
 
         # Runs the update functions on all active sprites.
@@ -65,7 +67,45 @@ while running:
                 b.clear_level()
                 b.level_build(i.currentLevel)
                 i.score = i.startingScore
+        for howToPlayButton in s.howToPlayGroup:
+            if howToPlayButton.clicked:
+                i.currentLevel = l.howToPlay
+                b.clear_level()
+                b.level_build(i.currentLevel)
 
+# # # # # # # # # # # # # # # # # # # # # HOW TO PLAY # # # # # # # # # # # # # # # # # # # # #
+
+    if i.currentLevel == l.howToPlay:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.display.quit()
+                pygame.quit()
+                sys.exit()
+            # If the user presses the LMB...
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    # Check if the user clicked on a button.
+                    for button in s.buttonGroup:
+                        button.is_clicked()
+
+        # Update & draw.
+        s.allSprites.update()
+        s.allSprites.draw(i.screen)
+        i.screen.blit(fps, (10, 10))
+
+        pygame.display.update()
+        pygame.display.flip()
+
+        # If the start button is clicked...
+        for startButton in s.startGroup:
+            if startButton.clicked:
+                # Update the current level, clear the screen, then build the next level.
+                i.currentLevel = l.level1
+                b.clear_level()
+                b.level_build(i.currentLevel)
+                i.score = i.startingScore
+
+# # # # # # # # # # # # # # # # # # # # # LEVEL 1 # # # # # # # # # # # # # # # # # # # # #
 
     # During the first level.
     if i.currentLevel == l.level1:
@@ -131,6 +171,8 @@ while running:
                 i.score = i.startingScore
                 i.reloadOrRestartText = ""
                 break
+
+# # # # # # # # # # # # # # # # # # # # # LEVEL 2 # # # # # # # # # # # # # # # # # # # # #
 
     # During the second level.
     if i.currentLevel == l.level2:

@@ -18,6 +18,15 @@ optionsImage = pygame.image.load("Assets/UI/options.png")
 optionsHover = pygame.image.load("Assets/UI/optionsHover.png")
 quitImage = pygame.image.load("Assets/UI/quit.png")
 quitHover = pygame.image.load("Assets/UI/quitHover.png")
+howToPlayImage = pygame.image.load("Assets/UI/howToPlay.png")
+howToPlayHover = pygame.image.load("Assets/UI/howToPlayHover.png")
+instructionsImage = pygame.image.load("Assets/UI/instructions.png")
+
+wallImage = pygame.image.load("Assets/Environment/wall.png")
+doorHorImage = pygame.image.load("Assets/Environment/doorHor.png")
+doorHorBrokenImage = pygame.image.load("Assets/Environment/doorHorBroken.png")
+doorVerImage = pygame.image.load("Assets/Environment/doorVer.png")
+doorVerBrokenImage = pygame.image.load("Assets/Environment/doorVerBroken.png")
 
 # List comprehension to load in the animation frames (they are saved as numbers in folders).
 playerIdle = [pygame.image.load("Assets/Player/idle/" + str(i + 1) + ".png") for i in range(5)]
@@ -35,8 +44,8 @@ playerBulletSpeed = 10
 enemySpeed = 3
 maxBullets = 10
 
-tileWidth = 128
-tileHeight = 128
+tileWidth = 100
+tileHeight = 100
 
 # Variable used to reset the score back to its original value.
 startingScore = 1000

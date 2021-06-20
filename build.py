@@ -53,6 +53,10 @@ def build_walls(level):
         for column in row:
             if column == "W":
                 s.Wall(x, y)
+            if column == "H":
+                s.Door(x, y, "hor")
+            if column == "V":
+                s.Door(x, y, "ver")
             x += i.tileWidth
         # Each row (string in list), reset the X to 0 and increase the Y by the tile size.
         x = 0
@@ -101,6 +105,10 @@ def place_buttons(level):
                 s.Options(x, y)
             if column == "Q":
                 s.Quit(x, y)
+            if column == "?":
+                s.HowToPlay(x, y)
+            if column == "I":
+                s.Instructions(x, y)
             x += i.tileWidth
         x = 0
         y += i.tileHeight
