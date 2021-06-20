@@ -1,0 +1,36 @@
+REFERENCES:
+
+
+---IMAGES---
+Player: rileygombart (2015), OpenGameArt.org
+	Available at: https://opengameart.org/content/animated-top-down-survivor-player
+
+Environment: Topdown Shooter, Kenney
+	     Available at: https://www.kenney.nl/assets/topdown-shooter
+
+Guards: created by me
+
+UI: created by me
+
+
+---SOUND---
+Silenced gunfire: Thomasweightman, freesound.org
+		  Available at: https://freesound.org/people/Thomasweightman/sounds/165525/
+
+Reload: nioczkus, freesound.org
+	Available at: https://freesound.org/people/nioczkus/sounds/396331/
+
+Guard death: tonsil5, freesound.org
+	     Available at: https://freesound.org/people/tonsil5/sounds/416839/
+
+House alarm: kyles, freesound.org
+	     Available at: https://freesound.org/people/kyles/sounds/452174/
+
+Door break: egomassive, freesound.org
+	    Available at: https://freesound.org/people/egomassive/sounds/536777/
+
+Bullet bounce: gezortenplotz, freesound.org
+	       Available at: https://freesound.org/people/gezortenplotz/sounds/20132/
+
+Stealth music: Avery Alexander, 'Resistance', YouTube
+	       Available at: https://www.youtube.com/watch?v=kRAyj9JgrKU

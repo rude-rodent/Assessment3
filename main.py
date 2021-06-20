@@ -14,10 +14,41 @@ clock = pygame.time.Clock()
 # Every 1000 ticks, call a user event.
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 
+
+# Some functions for code that will be used frequently during the game loop:
+
+def quit_event(click):
+    # Quit the game if the user presses the X.
+    if click.type == pygame.QUIT:
+        pygame.display.quit()
+        pygame.quit()
+        sys.exit()
+
+
+def button_click(click):
+    # If the user presses the LMB...
+    if click.type == pygame.MOUSEBUTTONDOWN:
+        if click.button == 1:
+            # Check if the user clicked on a button.
+            for button in s.buttonGroup:
+                button.is_clicked()
+
+
+def load_level():
+    b.clear_level()
+    b.level_build(i.currentLevel)
+    i.score = i.startingScore
+
+
 running = True
 
 # Build the first level (main menu) before starting the loop.
 b.level_build(i.currentLevel)
+
+
+if running:
+    # Play the game music on an endless loop.
+    pygame.mixer.Sound.play(i.gameMusic, -1)
 
 while running:
     # Limit the frame rate.
@@ -31,23 +62,17 @@ while running:
     # Fill the screen with the background colour.
     i.screen.fill(i.BGColour)
 
+
 # # # # # # # # # # # # # # # # # # # # # MAIN MENU # # # # # # # # # # # # # # # # # # # # #
+
 
     # During the main menu.
     if i.currentLevel == l.menu:
         # Check different button presses.
         for event in pygame.event.get():
-            # Quit the game if the user presses the X.
-            if event.type == pygame.QUIT:
-                pygame.display.quit()
-                pygame.quit()
-                sys.exit()
-            # If the user presses the LMB...
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    # Check if the user clicked on a button.
-                    for button in s.buttonGroup:
-                        button.is_clicked()
+            # I tried putting the quit functions in just the outer loop, but they were unreliable, so I've had to put them in every level.
+            quit_event(event)
+            button_click(event)
 
         # Runs the update functions on all active sprites.
         s.allSprites.update()
@@ -64,29 +89,21 @@ while running:
             if startButton.clicked:
                 # Update the current level, clear the screen, then build the next level.
                 i.currentLevel = l.level1
-                b.clear_level()
-                b.level_build(i.currentLevel)
-                i.score = i.startingScore
+                load_level()
+
         for howToPlayButton in s.howToPlayGroup:
             if howToPlayButton.clicked:
                 i.currentLevel = l.howToPlay
-                b.clear_level()
-                b.level_build(i.currentLevel)
+                load_level()
+
 
 # # # # # # # # # # # # # # # # # # # # # HOW TO PLAY # # # # # # # # # # # # # # # # # # # # #
 
+
     if i.currentLevel == l.howToPlay:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.display.quit()
-                pygame.quit()
-                sys.exit()
-            # If the user presses the LMB...
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    # Check if the user clicked on a button.
-                    for button in s.buttonGroup:
-                        button.is_clicked()
+            quit_event(event)
+            button_click(event)
 
         # Update & draw.
         s.allSprites.update()
@@ -101,21 +118,18 @@ while running:
             if startButton.clicked:
                 # Update the current level, clear the screen, then build the next level.
                 i.currentLevel = l.level1
-                b.clear_level()
-                b.level_build(i.currentLevel)
-                i.score = i.startingScore
+                load_level()
+
 
 # # # # # # # # # # # # # # # # # # # # # LEVEL 1 # # # # # # # # # # # # # # # # # # # # #
+
 
     # During the first level.
     if i.currentLevel == l.level1:
 
         # # # Checking for user input.
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.display.quit()
-                pygame.quit()
-                sys.exit()
+            quit_event(event)
             # If the 1000 ticks user event is called, 1 second has passed -> decrease the score by 1.
             if event.type == pygame.USEREVENT:
                 i.score -= 1
@@ -151,37 +165,29 @@ while running:
         # If no enemies remain, move to the next level.
         if len(s.aliveEnemyList) == 0:
             i.currentLevel = l.level2
-            b.clear_level()
-            b.level_build(i.currentLevel)
-            i.score = i.startingScore
+            load_level()
 
         # If you died, loop until user exits the game or presses R.
         while not b.playerInstance.alive:
             # Make sure the user can still quit the application during this infinite loop.
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.display.quit()
-                    pygame.quit()
-                    sys.exit()
+                quit_event(event)
             # Check for the user pressing R, then restart the level and break.
             key = pygame.key.get_pressed()
             if key[pygame.K_r]:
-                b.clear_level()
-                b.level_build(i.currentLevel)
-                i.score = i.startingScore
+                load_level()
                 i.reloadOrRestartText = ""
                 break
 
+
 # # # # # # # # # # # # # # # # # # # # # LEVEL 2 # # # # # # # # # # # # # # # # # # # # #
+
 
     # During the second level.
     if i.currentLevel == l.level2:
 
         for event in pygame.event.get():  # See the pygame user guide for various events (e.g. get button down).
-            if event.type == pygame.QUIT:
-                pygame.display.quit()
-                pygame.quit()
-                sys.exit()
+            quit_event(event)
             if event.type == pygame.USEREVENT:
                 i.score -= 1
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -190,7 +196,6 @@ while running:
 
         s.allSprites.update()
         b.cameraInstance.update(b.playerInstance)
-
         # Update the reload or restart display once the sprites have been updated.
         reloadOrRestartDisplay = font.render(i.reloadOrRestartText, True, pygame.Color('white'))
 
@@ -205,14 +210,10 @@ while running:
 
         while not b.playerInstance.alive:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.display.quit()
-                    pygame.quit()
-                    sys.exit()
+                quit_event(event)
             key = pygame.key.get_pressed()
             if key[pygame.K_r]:
-                b.clear_level()
-                b.level_build(i.currentLevel)
-                i.score = i.startingScore
+                load_level()
                 i.reloadOrRestartText = ""
                 break
+

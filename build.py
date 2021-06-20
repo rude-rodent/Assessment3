@@ -120,3 +120,4 @@ def clear_level():
         sprite.kill()
     s.enemyList = []
     s.aliveEnemyList = []
+    pygame.mixer.Sound.stop(i.houseAlarm)

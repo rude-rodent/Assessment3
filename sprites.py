@@ -153,12 +153,15 @@ class Player(pygame.sprite.Sprite):
                 self.magazine -= 1
                 # Remove 5 from the total score (score starts at 1000 and decreases with time and with each bullet fired).
                 i.score -= 5
+                pygame.mixer.Sound.play(i.shootSound)
 
     def enemy_collide(self):
         # If the enemy walks into the enemy's torchlight, it's game over.
         for enemy in aliveEnemyList:
             if self.hitBox.colliderect(enemy.visionRect) and enemy.alive:
                 self.alive = False
+                # If you got detected by a guard, play the house alarm.
+                pygame.mixer.Sound.play(i.houseAlarm, -1)
 
     def bullet_collide(self):
         # Check if the player collided with any bullets.
@@ -169,6 +172,8 @@ class Player(pygame.sprite.Sprite):
                 if bullet.bounces >= 1:
                     bullet.alive = False
                     self.alive = False
+                    # If you shot yourself, play the death grunt.
+                    pygame.mixer.Sound.play(i.guardDeathSound)
 
     def animation(self):
         global idleCount
@@ -208,6 +213,7 @@ class Player(pygame.sprite.Sprite):
 
         if self.reloading:
             if reloadCount + 1 >= 24:
+                pygame.mixer.Sound.play(i.reloadSound)
                 self.reloading = False
                 # Set the magazine size back to 6 after the reload animation has played fully.
                 self.magazine = 6
@@ -273,6 +279,7 @@ class Bullet(pygame.sprite.Sprite):
         # Loop through the walls, if the bullet has collided with one, return True.
         for wall in wallGroup:
             if self.rect.colliderect(wall.rect):
+                pygame.mixer.Sound.play(i.bulletBounceSound)
                 return True
         return False
 
@@ -320,18 +327,22 @@ class Door(pygame.sprite.Sprite):
             self.image = i.doorHorImage
         elif self.axis == "ver":
             self.image = i.doorVerImage
+        self.broken = False
 
     def update(self):
-        self.door_break_check()
+        if not self.broken:
+            self.door_break_check()
 
     def door_break_check(self):
         # Loop through the bullets, check for a collision.
         for bullet in bulletList:
             if self.rect.colliderect(bullet.rect):
+                self.broken = True
                 # Kill the bullet.
                 bullet.alive = False
-                # Open the door.
+                # Break open the door.
                 self.door_open()
+                pygame.mixer.Sound.play(i.doorBreakSound)
                 # Remove the door from the obstacle group; the player and enemies can now walk through it.
                 obstacleGroup.remove(self)
 
@@ -382,6 +393,7 @@ class Enemy(pygame.sprite.Sprite):
                     bullet.alive = False
                     self.alive = False
                     aliveEnemyList.remove(self)
+                    pygame.mixer.Sound.play(i.guardDeathSound)
             # Move and look if the wait timer has run out -- see self.turn()
             if self.canMove <= pygame.time.get_ticks():
                 self.walking = True
