@@ -156,6 +156,11 @@ while running:
                 if event.button == 1:
                     b.playerInstance.fire()
 
+        if s.enemyDetected:
+            b.playerInstance.alive = False
+            pygame.mixer.Sound.play(i.houseAlarm, -1)
+            s.enemyDetected = False
+
         # # # Updating.
         s.allSprites.update()
         # Updates the camera's position based on the player.
@@ -169,12 +174,22 @@ while running:
         # # # Blitting.
         # Offsets the sprites relative to the camera's position.
         for sprite in s.allSprites:
-            i.screen.blit(sprite.image, b.cameraInstance.offset(sprite))
+            # Don't offset the pause overlay relative to the camera's position -- this is UI and should be centered.
+            if sprite in s.pauseOverlayGroup:
+                pass
+            else:
+                i.screen.blit(sprite.image, b.cameraInstance.offset(sprite))
         i.screen.blit(fps, (50, 50))
         # Blit the score to the screen.
         i.screen.blit(scoreDisplay, (i.screenWidth - 210, 10))
         # Blit the reload or restart text.
         i.screen.blit(reloadOrRestartDisplay, (20, i.screenHeight - 50))
+
+        # # # Checking for win and lose conditions.
+        # If no enemies remain, move to the next level.
+        if len(s.aliveEnemyList) == 0:
+            i.currentLevel = l.level2
+            load_level()
 
         pygame.display.update()
         pygame.display.flip()
@@ -184,27 +199,32 @@ while running:
             # Make sure the user can still quit the application during this infinite loop.
             for event in pygame.event.get():
                 quit_event(event)
-            key = pygame.key.get_pressed()
-            if key[pygame.K_ESCAPE]:
-                toggle_pause()
-                break
+                button_click(event)
+                # Break out of the pause loop if the user hits escape again.
+                key = pygame.key.get_pressed()
+                if key[pygame.K_ESCAPE]:
+                    toggle_pause()
+                    break
+
+            # Update and blit the buttons.
+            for UI in s.pauseOverlayGroup:
+                UI.update()
+                i.screen.blit(UI.image, UI.rect)
+            pygame.display.update()
+            pygame.display.flip()
+
             for continueButton in s.continueGroup:
                 if continueButton.clicked:
-                    # Update the current level, clear the screen, then build the next level.
+                    # Break out of the pause loop if the user presses continue.
                     toggle_pause()
                     break
             for menuButton in s.menuGroup:
                 if menuButton.clicked:
+                    # Go back to the main menu if the user presses this.
                     i.currentLevel = l.menu
                     load_level()
                     toggle_pause()
                     break
-
-        # # # Checking for win and lose conditions.
-        # If no enemies remain, move to the next level.
-        if len(s.aliveEnemyList) == 0:
-            i.currentLevel = l.level2
-            load_level()
 
         # If you died, loop until user exits the game or presses R.
         while not b.playerInstance.alive:
@@ -242,13 +262,48 @@ while running:
         reloadOrRestartDisplay = font.render(i.reloadOrRestartText, True, pygame.Color('white'))
 
         for sprite in s.allSprites:
-            i.screen.blit(sprite.image, b.cameraInstance.offset(sprite))
+            if sprite in s.pauseOverlayGroup:
+                pass
+            else:
+                i.screen.blit(sprite.image, b.cameraInstance.offset(sprite))
         i.screen.blit(fps, (50, 50))
         i.screen.blit(scoreDisplay, (i.screenWidth - 210, 10))
         i.screen.blit(reloadOrRestartDisplay, (20, i.screenHeight - 50))
 
         pygame.display.update()
         pygame.display.flip()
+
+        # # # Pause.
+        while paused:
+            # Make sure the user can still quit the application during this infinite loop.
+            for event in pygame.event.get():
+                quit_event(event)
+                button_click(event)
+                # Break out of the pause loop if the user hits escape again.
+                key = pygame.key.get_pressed()
+                if key[pygame.K_ESCAPE]:
+                    toggle_pause()
+                    break
+
+            # Update and blit the buttons.
+            for button in s.buttonGroup:
+                button.update()
+                i.screen.blit(button.image, button.rect)
+            pygame.display.update()
+            pygame.display.flip()
+
+            for continueButton in s.continueGroup:
+                if continueButton.clicked:
+                    # Break out of the pause loop if the user presses continue.
+                    toggle_pause()
+                    break
+            for menuButton in s.menuGroup:
+                if menuButton.clicked:
+                    # Go back to the main menu if the user presses this.
+                    i.currentLevel = l.menu
+                    load_level()
+                    toggle_pause()
+                    break
 
         while not b.playerInstance.alive:
             for event in pygame.event.get():
@@ -258,4 +313,3 @@ while running:
                 load_level()
                 i.reloadOrRestartText = ""
                 break
-

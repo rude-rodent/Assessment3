@@ -1,6 +1,7 @@
 import pygame
 import info as i
 import sprites as s
+import levels as l
 
 cameraInstance = ""
 playerInstance = ""
@@ -38,10 +39,22 @@ class Camera:
 # Function for automatically building a level written as a list of strings.
 def level_build(level):
     # Functions separated like layers -- player will always be on top of enemies, which will always be on top of walls.
+    background(level)
     build_walls(level)
     place_enemies(level)
     place_player(level)
     place_buttons(level)
+
+
+def background(level):
+    if level == l.level1:
+        s.Background(1)
+    elif level == l.level2:
+        s.Background(2)
+    # elif level == l.level3:
+    #     s.Background(3)
+    else:
+        return
 
 
 def build_walls(level):
@@ -130,6 +143,8 @@ def pause_overlay(pauseLevel):
         for column in row:
             if column == "C":
                 s.Continue(x, y)
+            if column == "B":
+                s.BarSlider(x, y)
             if column == "M":
                 s.Menu(x, y)
             x += i.tileWidth

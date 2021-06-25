@@ -45,6 +45,7 @@ barSliderImage = pygame.image.load("Assets/UI/barSliderImage.png")
 knobImage = pygame.image.load("Assets/UI/barKnob.png")
 instructionsImage = pygame.image.load("Assets/UI/instructions.png")
 
+map2Image = pygame.image.load("Assets/Environment/map2.png")
 wallImage = pygame.image.load("Assets/Environment/wall.png")
 doorHorImage = pygame.image.load("Assets/Environment/doorHor.png")
 doorHorBrokenImage = pygame.image.load("Assets/Environment/doorHorBroken.png")

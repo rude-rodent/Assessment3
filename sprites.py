@@ -32,7 +32,10 @@ aliveEnemyList = []
 enemyList = []
 bulletList = []
 
+# Value from the slider to be used as sound volume.
 normalisedValue = 0.5
+# Value used in main to check if guards have found a dead guard.
+enemyDetected = False
 
 
 class Player(pygame.sprite.Sprite):
@@ -359,6 +362,23 @@ class Door(pygame.sprite.Sprite):
             self.image = i.doorVerBrokenImage
 
 
+class Background(pygame.sprite.Sprite):
+    def __init__(self, mapNum):
+        pygame.sprite.Sprite.__init__(self)
+        allSprites.add(self)
+        self.image = i.map2Image
+        self.rect = self.image.get_rect(topleft=(0, 0))
+        self.mapNum = mapNum
+
+    def map_type(self):
+        if self.mapNum == 1:
+            self.image = i.map2Image
+        elif self.mapNum == 2:
+            self.image = i.map2Image
+        elif self.mapNum == 3:
+            self.image = i.map2Image
+
+
 class Enemy(pygame.sprite.Sprite):
 
     def __init__(self, xPos, yPos):
@@ -389,16 +409,8 @@ class Enemy(pygame.sprite.Sprite):
     def update(self):
         self.animation()
         if self.alive:
-            # Use the smallest rect (hitBox) for bullet collisions -- the enemy shouldn't die if the bullet just hits its torchlight.
-            # Loop through the bullets.
-            for bullet in bulletList:
-                # If a collision occurred:
-                if self.hitBox.colliderect(bullet.rect):
-                    # Delete enemy from all groups, set the bullet's alive status to false.
-                    bullet.alive = False
-                    self.alive = False
-                    aliveEnemyList.remove(self)
-                    pygame.mixer.Sound.play(i.guardDeathSound)
+            self.check_bullets()
+            self.check_dead_guards()
             # Move and look if the wait timer has run out -- see self.turn()
             if self.canMove <= pygame.time.get_ticks():
                 self.walking = True
@@ -435,7 +447,7 @@ class Enemy(pygame.sprite.Sprite):
 
         # Random chance for the enemy to stop and turn based on a time interval.
         if pygame.time.get_ticks() % 150 == 0:
-            turnChance = random.randint(1, 5)
+            turnChance = random.randint(1, 4)
             if turnChance == 1:
                 self.turn()
 
@@ -461,13 +473,6 @@ class Enemy(pygame.sprite.Sprite):
                 # Make the enemy change direction.
                 self.turn()
 
-        # If a guard's torchlight touches a dead guard, they will raise the alarm and the game will end.
-        for enemy in enemyList:
-            if self.visionRect.colliderect(enemy.hitBox):
-                if not enemy.alive:
-                    pass
-                    # GAME OVER STATE.
-
     def turn(self):
         # Sets a timer that stops the enemy from moving for 1.5 seconds.
         self.canMove = pygame.time.get_ticks() + 1500
@@ -479,6 +484,31 @@ class Enemy(pygame.sprite.Sprite):
         self.direction = random.choice(self.possibleDirections)
         # Add the old direction back to the list.
         self.possibleDirections.append(oldDirection)
+
+    def check_bullets(self):
+        # Use the smallest rect (hitBox) for bullet collisions -- the enemy shouldn't die if the bullet just hits its torchlight.
+        # Loop through the bullets.
+        for bullet in bulletList:
+            # If a collision occurred:
+            if self.hitBox.colliderect(bullet.rect):
+                # Delete enemy from all groups, set the bullet's alive status to false.
+                bullet.alive = False
+                self.alive = False
+                aliveEnemyList.remove(self)
+                pygame.mixer.Sound.play(i.guardDeathSound)
+
+    def check_dead_guards(self):
+        global enemyDetected
+        # If a guard's torchlight touches a dead guard, they will raise the alarm and the game will end.
+        # Go through the enemies:
+        for enemy in enemyList:
+            # If the guard is not this particular instance of guard:
+            if enemyList.index(enemy) != enemyList.index(self):
+                # If this guard's torchlight touches the guard:
+                if self.visionRect.colliderect(enemy.hitBox):
+                    # If the guard is dead:
+                    if not enemy.alive:
+                        enemyDetected = True
 
     def animation(self):
 
@@ -613,6 +643,7 @@ class BarSlider(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         allSprites.add(self)
+        pauseOverlayGroup.add(self)
         self.image = i.barSliderImage
         self.rect = self.image.get_rect(topleft=(x, y))  # y + i.tileHeight/3 to center the slider's y position.
         self.x = x
@@ -634,6 +665,7 @@ class Knob(Button):
 
     def __init__(self, xMin, xMax, y):
         super().__init__()
+        pauseOverlayGroup.add(self)
         self.image = i.knobImage
         # Set starting pos to halfway along the slider.
         self.rect = self.image.get_rect(bottomleft=((xMax + xMin)/2, y + i.tileHeight - 3))
@@ -666,7 +698,7 @@ class Knob(Button):
     def move(self):
         if self.canMove:
             # Only move the knob along the X axis -- its Y should never change.
-            self.rect.x = pygame.mouse.get_pos()[0]
+            self.rect.x = pygame.mouse.get_pos()[0] - self.rect.width/2  # - width/2 so mouse is in the center of the knob.
             # Clamp the knob's position so it can't go past the edges of the slider.
             if self.rect.x + self.rect.width > self.max:  # + width because self.rect.x refers to the left side of the knob.
                 self.rect.x = self.max - self.rect.width
