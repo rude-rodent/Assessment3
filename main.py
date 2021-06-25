@@ -40,6 +40,17 @@ def load_level():
     i.score = i.startingScore
 
 
+def toggle_pause():
+    global paused
+    if not paused:
+        b.pause_overlay(l.pause)
+        paused = True
+    else:
+        b.pause_close()
+        paused = False
+
+
+paused = False
 running = True
 
 # Build the first level (main menu) before starting the loop.
@@ -61,6 +72,10 @@ while running:
 
     # Fill the screen with the background colour.
     i.screen.fill(i.BGColour)
+
+    # Always set the volume of all sounds to the value determined by the volume slider.
+    for sound in i.soundList:
+        sound.set_volume(s.normalisedValue)
 
 
 # # # # # # # # # # # # # # # # # # # # # MAIN MENU # # # # # # # # # # # # # # # # # # # # #
@@ -130,6 +145,9 @@ while running:
         # # # Checking for user input.
         for event in pygame.event.get():
             quit_event(event)
+            key = pygame.key.get_pressed()
+            if key[pygame.K_ESCAPE]:
+                toggle_pause()
             # If the 1000 ticks user event is called, 1 second has passed -> decrease the score by 1.
             if event.type == pygame.USEREVENT:
                 i.score -= 1
@@ -161,6 +179,27 @@ while running:
         pygame.display.update()
         pygame.display.flip()
 
+        # # # Pause.
+        while paused:
+            # Make sure the user can still quit the application during this infinite loop.
+            for event in pygame.event.get():
+                quit_event(event)
+            key = pygame.key.get_pressed()
+            if key[pygame.K_ESCAPE]:
+                toggle_pause()
+                break
+            for continueButton in s.continueGroup:
+                if continueButton.clicked:
+                    # Update the current level, clear the screen, then build the next level.
+                    toggle_pause()
+                    break
+            for menuButton in s.menuGroup:
+                if menuButton.clicked:
+                    i.currentLevel = l.menu
+                    load_level()
+                    toggle_pause()
+                    break
+
         # # # Checking for win and lose conditions.
         # If no enemies remain, move to the next level.
         if len(s.aliveEnemyList) == 0:
@@ -188,6 +227,9 @@ while running:
 
         for event in pygame.event.get():  # See the pygame user guide for various events (e.g. get button down).
             quit_event(event)
+            key = pygame.key.get_pressed()
+            if key[pygame.K_ESCAPE]:
+                toggle_pause()
             if event.type == pygame.USEREVENT:
                 i.score -= 1
             if event.type == pygame.MOUSEBUTTONDOWN:

@@ -7,10 +7,9 @@
 # All lists are used in build.level_build().
 menu = ["          ",
         "     S    ",
-        "     O    ",
+        "     B    ",
         "     ?    ",
-        "     Q    ",
-        "          "]
+        "     Q     "]
 
 howToPlay = [" I        ",
              "          ",
@@ -19,6 +18,16 @@ howToPlay = [" I        ",
              "          ",
              "          ",
              "     S    "]
+
+pause = ["          ",
+         "     C    ",
+         "          ",
+         "     M    ",
+         "          ",
+         "          ",
+         "          ",
+         "          "]
+
 
 level1 = ["WWWWWWWWWWWWWWWWWWWWW",
           "W P        W  W     W",

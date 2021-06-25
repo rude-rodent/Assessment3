@@ -33,12 +33,16 @@ reloadOrRestartText = ""
 bulletImage = pygame.image.load("Assets/Player/bullet.png")
 startImage = pygame.image.load("Assets/UI/start.png")
 startHover = pygame.image.load("Assets/UI/startHover.png")
-optionsImage = pygame.image.load("Assets/UI/options.png")
-optionsHover = pygame.image.load("Assets/UI/optionsHover.png")
 quitImage = pygame.image.load("Assets/UI/quit.png")
 quitHover = pygame.image.load("Assets/UI/quitHover.png")
 howToPlayImage = pygame.image.load("Assets/UI/howToPlay.png")
 howToPlayHover = pygame.image.load("Assets/UI/howToPlayHover.png")
+continueImage = pygame.image.load("Assets/UI/continue.png")
+continueHover = pygame.image.load("Assets/UI/continueHover.png")
+menuImage = pygame.image.load("Assets/UI/mainMenu.png")
+menuHover = pygame.image.load("Assets/UI/mainMenuHover.png")
+barSliderImage = pygame.image.load("Assets/UI/barSliderImage.png")
+knobImage = pygame.image.load("Assets/UI/barKnob.png")
 instructionsImage = pygame.image.load("Assets/UI/instructions.png")
 
 wallImage = pygame.image.load("Assets/Environment/wall.png")
@@ -57,12 +61,21 @@ enemyIdle = pygame.image.load("Assets/Guard/walk/1.png")
 enemyWalk = [pygame.image.load("Assets/Guard/walk/" + str(i + 1) + ".png") for i in range(10)]
 enemyDeath = [pygame.image.load("Assets/Guard/death/" + str(i + 1) + ".png") for i in range(4)]
 
-# Load all the sound effects.
+soundList = []
+
+# Load all the sound effects, add them all to the sound list.
 shootSound = pygame.mixer.Sound("Assets/Sound/playerShoot.wav")
+soundList.append(shootSound)
 reloadSound = pygame.mixer.Sound("Assets/Sound/playerReload.wav")
+soundList.append(reloadSound)
 guardDeathSound = pygame.mixer.Sound("Assets/Sound/guardDeath.wav")
+soundList.append(guardDeathSound)
 houseAlarm = pygame.mixer.Sound("Assets/Sound/houseAlarm.wav")
+soundList.append(houseAlarm)
 doorBreakSound = pygame.mixer.Sound("Assets/Sound/doorBreak.wav")
+soundList.append(doorBreakSound)
 bulletBounceSound = pygame.mixer.Sound("Assets/Sound/bulletBounce.wav")
+soundList.append(bulletBounceSound)
 
 gameMusic = pygame.mixer.Sound("Assets/Sound/music.wav")
+soundList.append(gameMusic)

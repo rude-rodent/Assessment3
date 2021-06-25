@@ -13,6 +13,9 @@ bulletGroup = pygame.sprite.Group()
 buttonGroup = pygame.sprite.Group()
 startGroup = pygame.sprite.Group()
 howToPlayGroup = pygame.sprite.Group()
+pauseOverlayGroup = pygame.sprite.Group()
+continueGroup = pygame.sprite.Group()
+menuGroup = pygame.sprite.Group()
 
 # Integers used to control which frame the player's animation is on. Must be global or they will be reset to 0 every time the function is called.
 idleCount = 0
@@ -28,6 +31,8 @@ reloadCount = 0
 aliveEnemyList = []
 enemyList = []
 bulletList = []
+
+normalisedValue = 0.5
 
 
 class Player(pygame.sprite.Sprite):
@@ -503,6 +508,7 @@ class Button(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         # Add the button to the sprite group.
         allSprites.add(self)
+        # Add the button to the button group; we can loop through them in main.
         buttonGroup.add(self)
         # Boolean to determine whether the button is clicked.
         self.clicked = False
@@ -531,23 +537,6 @@ class Start(Button):
             self.image = i.startHover
         else:
             self.image = i.startImage
-
-
-class Options(Button):
-
-    def __init__(self, x, y):
-        super().__init__()
-        self.image = i.optionsImage
-        self.rect = self.image.get_rect(topleft=(x, y))
-
-    def update(self):
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
-            self.image = i.optionsHover
-        else:
-            self.image = i.optionsImage
-        # Options menu will be added later.
-        if self.clicked:
-            print("options menu")
 
 
 class Quit(Button):
@@ -583,6 +572,106 @@ class HowToPlay(Button):
             self.image = i.howToPlayHover
         else:
             self.image = i.howToPlayImage
+
+
+class Continue(Button):
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = i.continueImage
+        self.rect = self.image.get_rect(topleft=(x, y))
+        # This button's functionality on click needs to be determined in the main loop, so add it to a group we can access there.
+        pauseOverlayGroup.add(self)
+        continueGroup.add(self)
+
+    def update(self):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            self.image = i.continueHover
+        else:
+            self.image = i.continueImage
+
+
+class Menu(Button):
+
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = i.menuImage
+        self.rect = self.image.get_rect(topleft=(x, y))
+        # This button's functionality on click needs to be determined in the main loop, so add it to a group we can access there.
+        pauseOverlayGroup.add(self)
+        menuGroup.add(self)
+
+    def update(self):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            self.image = i.menuHover
+        else:
+            self.image = i.menuImage
+
+
+class BarSlider(pygame.sprite.Sprite):
+
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        allSprites.add(self)
+        self.image = i.barSliderImage
+        self.rect = self.image.get_rect(topleft=(x, y))  # y + i.tileHeight/3 to center the slider's y position.
+        self.x = x
+        self.y = y
+        self.width = self.image.get_width() + self.x
+        self.hasKnob = False
+
+    def spawn_knob(self):
+        Knob(self.x, self.width, self.y)
+
+    def update(self):
+        # Spawn a knob for the slider; only do this if it doesn't already have one.
+        if not self.hasKnob:
+            self.spawn_knob()
+            self.hasKnob = True
+
+
+class Knob(Button):
+
+    def __init__(self, xMin, xMax, y):
+        super().__init__()
+        self.image = i.knobImage
+        # Set starting pos to halfway along the slider.
+        self.rect = self.image.get_rect(bottomleft=((xMax + xMin)/2, y + i.tileHeight - 3))
+        self.min = xMin
+        self.max = xMax
+        self.canMove = False
+
+    def update(self):
+        global normalisedValue
+        self.on_click()
+        self.move()
+        # The position of the knob on the slider, normalised to be between 0 and 1.
+        normalisedValue = (self.rect.x - self.min) / (self.max - self.min)
+
+    def on_click(self):
+        # If the knob is clicked:
+        if self.clicked:
+            # If the knob is not already being moved by the mouse:
+            if not self.canMove:
+                # Allow the knob to be moved by the mouse.
+                self.canMove = True
+                # Turn clicked back to false so that the user can click on this multiple times.
+                self.clicked = False
+            # If the knob is already being moved by the mouse:
+            else:
+                # Stop it from moving.
+                self.canMove = False
+                self.clicked = False
+
+    def move(self):
+        if self.canMove:
+            # Only move the knob along the X axis -- its Y should never change.
+            self.rect.x = pygame.mouse.get_pos()[0]
+            # Clamp the knob's position so it can't go past the edges of the slider.
+            if self.rect.x + self.rect.width > self.max:  # + width because self.rect.x refers to the left side of the knob.
+                self.rect.x = self.max - self.rect.width
+            if self.rect.x < self.min:
+                self.rect.x = self.min
 
 
 class Instructions(pygame.sprite.Sprite):

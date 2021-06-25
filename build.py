@@ -101,12 +101,12 @@ def place_buttons(level):
         for column in row:
             if column == "S":
                 s.Start(x, y)
-            if column == "O":
-                s.Options(x, y)
             if column == "Q":
                 s.Quit(x, y)
             if column == "?":
                 s.HowToPlay(x, y)
+            if column == "B":
+                s.BarSlider(x, y)
             if column == "I":
                 s.Instructions(x, y)
             x += i.tileWidth
@@ -121,3 +121,22 @@ def clear_level():
     s.enemyList = []
     s.aliveEnemyList = []
     pygame.mixer.Sound.stop(i.houseAlarm)
+
+
+def pause_overlay(pauseLevel):
+    x = 0
+    y = 0
+    for row in pauseLevel:
+        for column in row:
+            if column == "C":
+                s.Continue(x, y)
+            if column == "M":
+                s.Menu(x, y)
+            x += i.tileWidth
+        x = 0
+        y += i.tileHeight
+
+
+def pause_close():
+    for sprite in s.pauseOverlayGroup:
+        sprite.kill()
