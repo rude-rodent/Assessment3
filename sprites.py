@@ -369,14 +369,20 @@ class Background(pygame.sprite.Sprite):
         self.image = i.map2Image
         self.rect = self.image.get_rect(topleft=(0, 0))
         self.mapNum = mapNum
+        self.mapSet = False
 
     def map_type(self):
         if self.mapNum == 1:
-            self.image = i.map2Image
+            self.image = i.map1Image
         elif self.mapNum == 2:
             self.image = i.map2Image
         elif self.mapNum == 3:
-            self.image = i.map2Image
+            self.image = i.map3Image
+
+    def update(self):
+        if not self.mapSet:
+            self.map_type()
+            self.mapSet = True
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -528,6 +534,35 @@ class Enemy(pygame.sprite.Sprite):
                     # Otherwise, set the sprite's original image (so it can be rotated in self.look()) to the appropriate image in the animation.
                     # I'm int dividing the index by 5 because I want each image to be played for 5 frames before changing.
                     self.originalImage = i.enemyWalk[self.walkCount // 20]
+                    self.walkCount += 1
+
+
+class Boss(Enemy):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.image = i.bossIdle
+        self.hitBox = pygame.Rect(x, y, 100, 100)
+        self.rect = self.image.get_rect()
+        self.visionRect = pygame.Rect(x, y, 300, 300)
+
+    def animation(self):
+
+        if not self.alive:
+            if self.deathCount >= 24:
+                self.originalImage = i.bossDeath[3]
+            else:
+                self.originalImage = i.bossDeath[self.deathCount // 6]
+                self.deathCount += 1
+        else:
+            if self.walking:
+                # If the counter is greater than the number of images in the list (5) * how long each image should be blit for (5 frames)...
+                if self.walkCount + 1 >= 200:
+                    # Set the walk count back to 0, restarting the animation loop.
+                    self.walkCount = 0
+                else:
+                    # Otherwise, set the sprite's original image (so it can be rotated in self.look()) to the appropriate image in the animation.
+                    # I'm int dividing the index by 5 because I want each image to be played for 5 frames before changing.
+                    self.originalImage = i.bossWalk[self.walkCount // 20]
                     self.walkCount += 1
 
 

@@ -51,8 +51,8 @@ def background(level):
         s.Background(1)
     elif level == l.level2:
         s.Background(2)
-    # elif level == l.level3:
-    #     s.Background(3)
+    elif level == l.level3:
+        s.Background(3)
     else:
         return
 
@@ -84,6 +84,8 @@ def place_enemies(level):
         for column in row:
             if column == "E":
                 s.Enemy(x, y)
+            if column == "B":
+                s.Boss(x, y)
             x += i.tileWidth
         x = 0
         y += i.tileHeight
@@ -118,7 +120,7 @@ def place_buttons(level):
                 s.Quit(x, y)
             if column == "?":
                 s.HowToPlay(x, y)
-            if column == "B":
+            if column == "N":
                 s.BarSlider(x, y)
             if column == "I":
                 s.Instructions(x, y)
@@ -133,6 +135,7 @@ def clear_level():
         sprite.kill()
     s.enemyList = []
     s.aliveEnemyList = []
+    s.bulletList = []
     pygame.mixer.Sound.stop(i.houseAlarm)
 
 
@@ -143,7 +146,7 @@ def pause_overlay(pauseLevel):
         for column in row:
             if column == "C":
                 s.Continue(x, y)
-            if column == "B":
+            if column == "N":
                 s.BarSlider(x, y)
             if column == "M":
                 s.Menu(x, y)

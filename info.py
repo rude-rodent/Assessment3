@@ -25,9 +25,16 @@ startingScore = 1000
 # Score that can be changed during the game.
 score = 1000
 
+lvl1FinalScore = 0
+lvl2FinalScore = 0
+lvl3FinalScore = 0
+
 # Text that will be displayed in the same area; simpler to have one variable that can display either form of text.
 # Will either display "R to reload" if the player's gun is empty, or "R to restart" if the player is dead.
 reloadOrRestartText = ""
+
+# Text that will display a message when the player proceeds through levels.
+proceedText = ""
 
 # Load all the images for the sprites.
 bulletImage = pygame.image.load("Assets/Player/bullet.png")
@@ -45,7 +52,9 @@ barSliderImage = pygame.image.load("Assets/UI/barSliderImage.png")
 knobImage = pygame.image.load("Assets/UI/barKnob.png")
 instructionsImage = pygame.image.load("Assets/UI/instructions.png")
 
+map1Image = pygame.image.load("Assets/Environment/map1.png")
 map2Image = pygame.image.load("Assets/Environment/map2.png")
+map3Image = pygame.image.load("Assets/Environment/map3.png")
 wallImage = pygame.image.load("Assets/Environment/wall.png")
 doorHorImage = pygame.image.load("Assets/Environment/doorHor.png")
 doorHorBrokenImage = pygame.image.load("Assets/Environment/doorHorBroken.png")
@@ -61,6 +70,10 @@ playerReload = [pygame.image.load("Assets/Player/reload/" + str(i + 1) + ".png")
 enemyIdle = pygame.image.load("Assets/Guard/walk/1.png")
 enemyWalk = [pygame.image.load("Assets/Guard/walk/" + str(i + 1) + ".png") for i in range(10)]
 enemyDeath = [pygame.image.load("Assets/Guard/death/" + str(i + 1) + ".png") for i in range(4)]
+
+bossIdle = pygame.image.load("Assets/Guard/bossWalk/1.png")
+bossWalk = [pygame.image.load("Assets/Guard/bossWalk/" + str(i + 1) + ".png") for i in range(10)]
+bossDeath = [pygame.image.load("Assets/Guard/bossDeath/" + str(i + 1) + ".png") for i in range(4)]
 
 soundList = []
 
