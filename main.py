@@ -8,7 +8,7 @@ import build as b
 pygame.init()
 pygame.display.set_caption(i.caption)
 
-font = pygame.font.Font(None, 50)
+font = pygame.font.Font("Assets/UI/AGENCYR.TTF", 50)
 
 clock = pygame.time.Clock()
 # Every 1000 ticks, call a user event.
@@ -23,6 +23,12 @@ def quit_event(click):
         pygame.display.quit()
         pygame.quit()
         sys.exit()
+
+
+def any_key_event(click):
+    if click.type == pygame.KEYDOWN:
+        i.currentLevel = l.menu
+        load_level()
 
 
 def button_click(click):
@@ -43,19 +49,37 @@ def load_level():
 def toggle_pause():
     global paused
     if not paused:
+        # Build the pause overlay on top of the current screen.
         b.pause_overlay(l.pause)
         paused = True
     else:
+        # Clear the pause overlay.
         b.pause_close()
         paused = False
 
 
+def win_text():
+    global winning
+    if winning:
+        # Update the mission success & score text displays.
+        i.missionSuccess = "MISSION SUCCESS. Final scores:"
+        i.score1Text = "Floor 1: " + str(i.lvl1FinalScore)
+        i.score2Text = "Floor 2: " + str(i.lvl2FinalScore)
+        i.score3Text = "Floor 3: " + str(i.lvl3FinalScore)
+    else:
+        i.missionSuccess = ""
+        i.score1Text = ""
+        i.score2Text = ""
+        i.score3Text = ""
+
+
 paused = False
+winning = False
 running = True
 
 textTimer = 0
 
-# Build the first level (main menu) before starting the loop.
+# Build the first level (title screen) before starting the loop.
 b.level_build(i.currentLevel)
 
 
@@ -83,7 +107,26 @@ while running:
         sound.set_volume(s.normalisedValue)
 
 
-# # # # # # # # # # # # # # # # # # # # # MAIN MENU # # # # # # # # # # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # # # # # # # TITLE # # # # # # # # # # # # # # # # # # # # #
+
+
+    # During the title screen.
+    if i.currentLevel == l.title:
+        # Check for events.
+        for event in pygame.event.get():
+            # Check if the user quit or pressed any other key.
+            quit_event(event)
+            any_key_event(event)
+
+        # Update and draw all sprites (the background image).
+        s.allSprites.update()
+        s.allSprites.draw(i.screen)
+
+        pygame.display.update()
+        pygame.display.flip()
+
+
+    # # # # # # # # # # # # # # # # # # # # # MAIN MENU # # # # # # # # # # # # # # # # # # # # #
 
 
     # During the main menu.
@@ -146,12 +189,17 @@ while running:
     # If you're in an actual game level.
     if i.currentLevel == l.level1 or i.currentLevel == l.level2 or i.currentLevel == l.level3:
 
+
         # # # Checking for user input.
         for event in pygame.event.get():
             quit_event(event)
             key = pygame.key.get_pressed()
             if key[pygame.K_ESCAPE]:
                 toggle_pause()
+            if key[pygame.K_SPACE]:
+                winning = True
+                win_text()
+                b.win_overlay(l.win)
             # If the 1000 ticks user event is called, 1 second has passed -> decrease the score by 1.
             if event.type == pygame.USEREVENT:
                 i.score -= 1
@@ -167,6 +215,34 @@ while running:
             # Set this global variable back to false so future guards can be detected.
             s.enemyDetected = False
 
+
+        # # # Checking for win condition.
+        # If no enemies remain, move to the next level.
+        if len(s.aliveEnemyList) == 0:
+            pygame.mixer.Sound.play(i.successSound)
+            # If you're in level 1, save your score and go to level 2.
+            if i.currentLevel == l.level1:
+                i.lvl1FinalScore = i.score
+                i.currentLevel = l.level2
+                # Set the proceed text, then load the next level.
+                i.proceedText = "1st floor cleared. Proceed to 2nd floor..."
+                textTimer = 0
+                load_level()
+            # If you're in level 2, save your score and go to level 3.
+            elif i.currentLevel == l.level2:
+                i.lvl2FinalScore = i.score
+                i.currentLevel = l.level3
+                i.proceedText = "2nd floor cleared. Destroy all guards and the boss..."
+                textTimer = 0
+                load_level()
+            # If you're in level 3, save your score and then show the final winning overlay.
+            elif i.currentLevel == l.level3:
+                i.lvl3FinalScore = i.score
+                winning = True
+                win_text()
+                b.win_overlay(l.win)
+
+
         # # # Updating.
         s.allSprites.update()
         # Updates the camera's position based on the player.
@@ -177,43 +253,34 @@ while running:
         # Update the reload or restart display & proceed text display once the sprites have been updated.
         reloadOrRestartDisplay = font.render(i.reloadOrRestartText, True, pygame.Color('white'))
         proceedTextDisplay = font.render(i.proceedText, True, pygame.Color('white'))
+        # Create the mission success display, though it's an empty string until the game is actually won.
+        missionSuccessDisplay = font.render(i.missionSuccess, True, pygame.Color('white'))
+        score1Display = font.render(i.score1Text, True, pygame.Color('white'))
+        score2Display = font.render(i.score2Text, True, pygame.Color('white'))
+        score3Display = font.render(i.score3Text, True, pygame.Color('white'))
+
 
         # # # Blitting.
         # Offsets the sprites relative to the camera's position.
         for sprite in s.allSprites:
-            # Don't offset the pause overlay relative to the camera's position -- this is UI and should be centered.
-            if sprite in s.pauseOverlayGroup:
+            # Don't offset the overlay sprites relative to the camera's position -- this is UI and should be centered in the screen.
+            if sprite in s.overlayGroup:
                 pass
             else:
                 i.screen.blit(sprite.image, b.cameraInstance.offset(sprite))
         # Blit the score to the screen.
         i.screen.blit(scoreDisplay, (i.screenWidth - 210, 10))
-        # Blit the reload or restart text.
-        i.screen.blit(reloadOrRestartDisplay, (20, i.screenHeight - 50))
+        # Blit the various text displays.
+        i.screen.blit(reloadOrRestartDisplay, (20, i.screenHeight - 70))
         i.screen.blit(proceedTextDisplay, (40, 10))
-
-        # # # Checking for win condition.
-        # If no enemies remain, move to the next level.
-        if len(s.aliveEnemyList) == 0:
-            # If you're in level 1, save your score and go to level 2.
-            if i.currentLevel == l.level1:
-                i.lvl1FinalScore = i.score
-                i.proceedText = "1st floor cleared. Proceed to 2nd floor..."
-                i.currentLevel = l.level2
-            # If you're in level 2, save your score and go to level 3.
-            elif i.currentLevel == l.level2:
-                i.lvl2FinalScore = i.score
-                i.proceedText = "2nd floor cleared. Destroy all guards and the boss..."
-                i.currentLevel = l.level3
-            elif i.currentLevel == l.level3:
-                i.lvl3FinalScore = i.score
-                pass  # put win condition here
-            # Set the proceed text, then load the next level.
-            textTimer = 0
-            load_level()
+        i.screen.blit(missionSuccessDisplay, (400, 150))
+        i.screen.blit(score1Display, (400, 250))
+        i.screen.blit(score2Display, (400, 350))
+        i.screen.blit(score3Display, (400, 450))
 
         pygame.display.update()
         pygame.display.flip()
+
 
         # # # Pause.
         while paused:
@@ -228,7 +295,7 @@ while running:
                     break
 
             # Update and blit the buttons.
-            for UI in s.pauseOverlayGroup:
+            for UI in s.overlayGroup:
                 UI.update()
                 i.screen.blit(UI.image, UI.rect)
             pygame.display.update()
@@ -247,9 +314,10 @@ while running:
                 if menuButton.clicked:
                     # Go back to the main menu if the user presses this.
                     i.currentLevel = l.menu
-                    load_level()
                     toggle_pause()
+                    load_level()
                     break
+
 
         # # # Checking for lose condition.
         # If you died, loop until user exits the game or presses R.
@@ -263,3 +331,23 @@ while running:
                 load_level()
                 i.reloadOrRestartText = ""
                 break
+
+
+        # # # Final win overlay loop.
+        while winning:
+            for event in pygame.event.get():
+                quit_event(event)
+                button_click(event)
+
+            for menuButton in s.menuGroup:
+                if menuButton.clicked:
+                    i.currentLevel = l.menu
+                    winning = False
+                    win_text()
+                    load_level()
+                    break
+                menuButton.update()
+                i.screen.blit(menuButton.image, menuButton.rect)
+            pygame.display.update()
+            pygame.display.flip()
+

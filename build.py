@@ -47,6 +47,8 @@ def level_build(level):
 
 
 def background(level):
+    if level == l.title:
+        s.Background(0)
     if level == l.level1:
         s.Background(1)
     elif level == l.level2:
@@ -136,6 +138,7 @@ def clear_level():
     s.enemyList = []
     s.aliveEnemyList = []
     s.bulletList = []
+    # Also turn off the house alarm, if it's playing.
     pygame.mixer.Sound.stop(i.houseAlarm)
 
 
@@ -156,5 +159,17 @@ def pause_overlay(pauseLevel):
 
 
 def pause_close():
-    for sprite in s.pauseOverlayGroup:
+    for sprite in s.overlayGroup:
         sprite.kill()
+
+
+def win_overlay(winLevel):
+    x = 0
+    y = 0
+    for row in winLevel:
+        for column in row:
+            if column == "M":
+                s.Menu(x, y)
+            x += i.tileWidth
+        x = 0
+        y += i.tileHeight

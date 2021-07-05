@@ -2,14 +2,14 @@ import pygame
 import levels as l
 pygame.mixer.init()
 
-caption = "Bouncing Bullets"
+caption = "Bouncer"
 screenWidth = 1280
 screenHeight = 720
 FPS = 60
-BGColour = (100, 100, 100)
+BGColour = (0, 0, 0)
 
 screen = pygame.display.set_mode((screenWidth, screenHeight))  # Sets resolution.
-currentLevel = l.menu  # Set to the first stage of the game (main menu).
+currentLevel = l.title  # Set to the first stage of the game (title screen).
 
 # Various values that can be tweaked.
 moveSpeed = 5
@@ -28,6 +28,12 @@ score = 1000
 lvl1FinalScore = 0
 lvl2FinalScore = 0
 lvl3FinalScore = 0
+
+# Text to be blit at the end of the game.
+missionSuccess = ""
+score1Text = ""
+score2Text = ""
+score3Text = ""
 
 # Text that will be displayed in the same area; simpler to have one variable that can display either form of text.
 # Will either display "R to reload" if the player's gun is empty, or "R to restart" if the player is dead.
@@ -52,6 +58,7 @@ barSliderImage = pygame.image.load("Assets/UI/barSliderImage.png")
 knobImage = pygame.image.load("Assets/UI/barKnob.png")
 instructionsImage = pygame.image.load("Assets/UI/instructions.png")
 
+titleImage = pygame.image.load("Assets/UI/titleScreen.png")
 map1Image = pygame.image.load("Assets/Environment/map1.png")
 map2Image = pygame.image.load("Assets/Environment/map2.png")
 map3Image = pygame.image.load("Assets/Environment/map3.png")
@@ -90,6 +97,8 @@ doorBreakSound = pygame.mixer.Sound("Assets/Sound/doorBreak.wav")
 soundList.append(doorBreakSound)
 bulletBounceSound = pygame.mixer.Sound("Assets/Sound/bulletBounce.wav")
 soundList.append(bulletBounceSound)
+successSound = pygame.mixer.Sound("Assets/Sound/success.wav")
+soundList.append(successSound)
 
 gameMusic = pygame.mixer.Sound("Assets/Sound/music.wav")
 soundList.append(gameMusic)

@@ -13,7 +13,7 @@ bulletGroup = pygame.sprite.Group()
 buttonGroup = pygame.sprite.Group()
 startGroup = pygame.sprite.Group()
 howToPlayGroup = pygame.sprite.Group()
-pauseOverlayGroup = pygame.sprite.Group()
+overlayGroup = pygame.sprite.Group()
 continueGroup = pygame.sprite.Group()
 menuGroup = pygame.sprite.Group()
 
@@ -372,7 +372,9 @@ class Background(pygame.sprite.Sprite):
         self.mapSet = False
 
     def map_type(self):
-        if self.mapNum == 1:
+        if self.mapNum == 0:
+            self.image = i.titleImage
+        elif self.mapNum == 1:
             self.image = i.map1Image
         elif self.mapNum == 2:
             self.image = i.map2Image
@@ -646,7 +648,7 @@ class Continue(Button):
         self.image = i.continueImage
         self.rect = self.image.get_rect(topleft=(x, y))
         # This button's functionality on click needs to be determined in the main loop, so add it to a group we can access there.
-        pauseOverlayGroup.add(self)
+        overlayGroup.add(self)
         continueGroup.add(self)
 
     def update(self):
@@ -663,7 +665,7 @@ class Menu(Button):
         self.image = i.menuImage
         self.rect = self.image.get_rect(topleft=(x, y))
         # This button's functionality on click needs to be determined in the main loop, so add it to a group we can access there.
-        pauseOverlayGroup.add(self)
+        overlayGroup.add(self)
         menuGroup.add(self)
 
     def update(self):
@@ -678,7 +680,7 @@ class BarSlider(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         allSprites.add(self)
-        pauseOverlayGroup.add(self)
+        overlayGroup.add(self)
         self.image = i.barSliderImage
         self.rect = self.image.get_rect(topleft=(x, y))  # y + i.tileHeight/3 to center the slider's y position.
         self.x = x
@@ -700,7 +702,7 @@ class Knob(Button):
 
     def __init__(self, xMin, xMax, y):
         super().__init__()
-        pauseOverlayGroup.add(self)
+        overlayGroup.add(self)
         self.image = i.knobImage
         # Set starting pos to halfway along the slider.
         self.rect = self.image.get_rect(bottomleft=((xMax + xMin)/2, y + i.tileHeight - 3))

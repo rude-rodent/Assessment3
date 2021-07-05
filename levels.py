@@ -9,6 +9,8 @@
 # I = Instructions
 
 # All lists are used in build.level_build().
+title = []
+
 menu = ["          ",
         "     S    ",
         "     N    ",
@@ -98,11 +100,12 @@ level3 = ["WWWWWWWWWWWWWWWWWWWWWWWWWW",
           "W     W   W     WWWWWWWWWW",
           "W  E  W   W  E  WWWWWWWWWW",
           "W     WWWWWWWWWWWWWWWWWWWW",
-          "WWWWWWWWWWWWWWWWWWWWWWWWWW",]
+          "WWWWWWWWWWWWWWWWWWWWWWWWWW"]
 
-gameOver = ["          ",
-            "          ",
-            "          ",
-            "          ",
-            "          ",
-            "          "]
+win = ["          ",
+       "          ",
+       "          ",
+       "          ",
+       "          ",
+       "          ",
+       "     M    "]
