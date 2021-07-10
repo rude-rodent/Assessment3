@@ -351,3 +351,4 @@ while running:
             pygame.display.update()
             pygame.display.flip()
 
+input()

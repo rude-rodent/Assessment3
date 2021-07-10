@@ -32,5 +32,8 @@ Door break: egomassive, freesound.org
 Bullet bounce: gezortenplotz, freesound.org
 	       Available at: https://freesound.org/people/gezortenplotz/sounds/20132/
 
+Success: GabrielAraujo, freesound.org
+	 Available at: https://freesound.org/people/GabrielAraujo/sounds/242501/
+
 Stealth music: Avery Alexander, 'Resistance', YouTube
 	       Available at: https://www.youtube.com/watch?v=kRAyj9JgrKU
