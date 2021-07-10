@@ -350,5 +350,3 @@ while running:
                 i.screen.blit(menuButton.image, menuButton.rect)
             pygame.display.update()
             pygame.display.flip()
-
-input()
