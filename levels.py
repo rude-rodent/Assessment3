@@ -25,16 +25,6 @@ howToPlay = [" I        ",
              "          ",
              "     S    "]
 
-pause = ["          ",
-         "     C    ",
-         "     N    ",
-         "     M    ",
-         "          ",
-         "          ",
-         "          ",
-         "          "]
-
-
 level1 = ["WWWWWWWWWWWWWWWWWWW",
           "W       WWWWWWWWWWW",
           "W       WWWWWWWWWWW",
@@ -91,9 +81,9 @@ level3 = ["WWWWWWWWWWWWWWWWWWWWWWWWWW",
           "WW  E  W  W      W   W   W",
           "WWWWWWWW  WWWWHWWWWWWW   W",
           "WWWW E    W  E       W E W",
-          "WWWW      W      E   W   W",
+          "WWWW      W          W   W",
           "WWWWWWWWHWWWWHWWW    V   W",
-          "W E   W   W     W    W   W",
+          "W     W   W     W    W   W",
           "W     W   W E   W    W   W",
           "W  B  V E W     W E  W   W",
           "W     W   W     WWWWWWWWWW",
@@ -109,3 +99,20 @@ win = ["          ",
        "          ",
        "          ",
        "     M    "]
+
+pause = ["          ",
+         "     C    ",
+         "     N    ",
+         "     M    ",
+         "          ",
+         "          ",
+         "          ",
+         "          "]
+
+proceed = ["          ",
+           "          ",
+           "          ",
+           "          ",
+           "          ",
+           "          ",
+           "     C    "]

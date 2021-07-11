@@ -19,7 +19,7 @@ class Camera:
 
     def offset(self, sprite):
         # Returns the sprite's rect after moving it relative to the camera.
-        # Must return a rect in order to be used as part of the draw() function in main.
+        # Must return a rect in order to be used as part of the sprite's draw() function.
         return sprite.rect.move(self.rect.topleft)
 
     def update(self, sprite):
@@ -38,7 +38,7 @@ class Camera:
 
 # Function for automatically building a level written as a list of strings.
 def level_build(level):
-    # Functions separated like layers -- player will always be on top of enemies, which will always be on top of walls.
+    # Functions separated like layers -- player will always be on top of enemies, which will always be on top of walls, etc.
     background(level)
     build_walls(level)
     place_enemies(level)
@@ -47,6 +47,7 @@ def level_build(level):
 
 
 def background(level):
+    # Spawn a background based on the current level.
     if level == l.title:
         s.Background(0)
     if level == l.level1:
@@ -56,6 +57,7 @@ def background(level):
     elif level == l.level3:
         s.Background(3)
     else:
+        # Some levels don't have backgrounds (e.g. main menu).
         return
 
 
@@ -63,6 +65,7 @@ def build_walls(level):
     # X and y positions to feed into Wall()
     x = 0
     y = 0
+    # Each string (row) in the list (level)...
     for row in level:
         # Each column (letter in string), move the X by the tile size. Spawn sprite instances according to letters (see level.py for key).
         for column in row:
@@ -135,6 +138,7 @@ def place_buttons(level):
 def clear_level():
     for sprite in s.allSprites:
         sprite.kill()
+    # Also reset any sprite lists.
     s.enemyList = []
     s.aliveEnemyList = []
     s.bulletList = []
@@ -142,10 +146,12 @@ def clear_level():
     pygame.mixer.Sound.stop(i.houseAlarm)
 
 
-def pause_overlay(pauseLevel):
+# Function for building an overlay on top of the existing level.
+# Used for pausing, proceeding to next level, dying, etc.
+def overlay_build(overlayLevel):
     x = 0
     y = 0
-    for row in pauseLevel:
+    for row in overlayLevel:
         for column in row:
             if column == "C":
                 s.Continue(x, y)
@@ -158,18 +164,7 @@ def pause_overlay(pauseLevel):
         y += i.tileHeight
 
 
-def pause_close():
+# Function to destroy the overlay.
+def overlay_close():
     for sprite in s.overlayGroup:
         sprite.kill()
-
-
-def win_overlay(winLevel):
-    x = 0
-    y = 0
-    for row in winLevel:
-        for column in row:
-            if column == "M":
-                s.Menu(x, y)
-            x += i.tileWidth
-        x = 0
-        y += i.tileHeight

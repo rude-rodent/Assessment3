@@ -5,7 +5,7 @@ import random
 import info as i
 
 # Groups used in the main loop for various identification purposes.
-# All groups (no lists) so that sprite.kill() removes a sprite from everything simultaneously.
+# All groups so that sprite.kill() removes a sprite from everything simultaneously.
 allSprites = pygame.sprite.Group()
 wallGroup = pygame.sprite.Group()
 obstacleGroup = pygame.sprite.Group()
@@ -44,9 +44,9 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         # Add player to the sprite group.
         allSprites.add(self)
-        # Hit box of the player, used to move the sprite and detect collisions.
         # Original image kept to avoid distortion caused by rotating.
         self.originalImage = i.playerIdle[0]
+        # Image that will be blit -- this one can be rotated.
         self.image = i.playerIdle[0]
         # A rect is required for the sprite's draw() function.
         self.rect = i.playerIdle[0].get_rect()
@@ -63,6 +63,7 @@ class Player(pygame.sprite.Sprite):
         self.reloading = False
 
     def update(self):
+        # Sprites run their update function every frame; call all other functions in here.
         self.get_keys()
         self.animation()
         self.look()
@@ -75,16 +76,13 @@ class Player(pygame.sprite.Sprite):
         key = pygame.key.get_pressed()
         if key[pygame.K_a]:
             self.move(-i.moveSpeed, 0)
-            self.walking = True
         if key[pygame.K_d]:
             self.move(i.moveSpeed, 0)
-            self.walking = True
         if key[pygame.K_w]:
             self.move(0, -i.moveSpeed)
-            self.walking = True
         if key[pygame.K_s]:
             self.move(0, i.moveSpeed)
-            self.walking = True
+        self.walking = True
 
         if not key[pygame.K_a] and not key[pygame.K_d] and not key[pygame.K_w] and not key[pygame.K_s]:
             self.walking = False
@@ -144,7 +142,7 @@ class Player(pygame.sprite.Sprite):
                 i.reloadOrRestartText = "R to reload!"
 
     def fire(self):
-        # If player is dead, reloadOrRestartText will show the restart message (that takes priority).
+        # If player is dead, reloadOrRestartText will show the restart message (restart message takes priority).
         if self.alive:
             if self.magazine >= 1:
                 self.shooting = True
@@ -166,7 +164,11 @@ class Player(pygame.sprite.Sprite):
     def enemy_collide(self):
         # If the enemy walks into the enemy's torchlight, it's game over.
         for enemy in aliveEnemyList:
+            # Only check alive enemies for collisions.
             if self.hitBox.colliderect(enemy.visionRect) and enemy.alive:
+                # Display text showing why the player died.
+                i.proceedOrDeathText = i.deathList[1]
+                # Kill the player.
                 self.alive = False
                 # If you got detected by a guard, play the house alarm.
                 pygame.mixer.Sound.play(i.houseAlarm, -1)
@@ -176,9 +178,12 @@ class Player(pygame.sprite.Sprite):
         for bullet in bulletList:
             if self.hitBox.colliderect(bullet.rect):
                 # The bullet can only kill the player if it's bounced at least one time.
-                # Because it's instantiated from the center of the player's hit box; it would immediately collide with & kill the player.
+                # This is because it's instantiated from the center of the player's hit box; it would immediately collide with & kill the player.
                 if bullet.bounces >= 1:
                     bullet.alive = False
+                    # Display text showing why the player died.
+                    i.proceedOrDeathText = i.deathList[0]
+                    # Kill the player.
                     self.alive = False
                     # If you shot yourself, play the death grunt.
                     pygame.mixer.Sound.play(i.guardDeathSound)
@@ -237,6 +242,7 @@ class Bullet(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         # Add the bullet to the sprite group.
         allSprites.add(self)
+        # Add the bullet to bullet group & list, to be used later.
         bulletGroup.add(self)
         bulletList.append(self)
         # The x and y values from the position tuple.
@@ -299,7 +305,7 @@ class Bullet(pygame.sprite.Sprite):
         # Check the # of bullets, if > 10, set the oldest bullet's "alive" bool to false.
         if len(bulletGroup) > i.maxBullets:
             bulletGroup.sprites()[0].alive = False
-        # Go through the bulletList and delete any bullets with alive = false. Also delete from the sprite group.
+        # Go through the bullet group and delete any bullets with alive = false. Also delete from the sprite group & bullet list.
         for bullet in bulletGroup:
             if not bullet.alive:
                 bulletGroup.remove(bullet)
@@ -366,11 +372,15 @@ class Background(pygame.sprite.Sprite):
     def __init__(self, mapNum):
         pygame.sprite.Sprite.__init__(self)
         allSprites.add(self)
-        self.image = i.map2Image
+        # Set a default image. This will be changed in update.
+        self.image = i.map1Image
         self.rect = self.image.get_rect(topleft=(0, 0))
+        # The imported map number, used to set the map's image.
         self.mapNum = mapNum
+        # A boolean to identify whether the map's image has been set correctly yet.
         self.mapSet = False
 
+    # Set the map's image based on the map number.
     def map_type(self):
         if self.mapNum == 0:
             self.image = i.titleImage
@@ -382,6 +392,7 @@ class Background(pygame.sprite.Sprite):
             self.image = i.map3Image
 
     def update(self):
+        # Set the map. Only run once.
         if not self.mapSet:
             self.map_type()
             self.mapSet = True
@@ -391,7 +402,7 @@ class Enemy(pygame.sprite.Sprite):
 
     def __init__(self, xPos, yPos):
         pygame.sprite.Sprite.__init__(self)
-        # Add the enemy to the sprite group.
+        # Add the enemy to the enemy list, sprite & enemy groups.
         allSprites.add(self)
         enemyList.append(self)
         aliveEnemyList.append(self)
@@ -403,7 +414,7 @@ class Enemy(pygame.sprite.Sprite):
         self.image = i.enemyIdle
         self.rect = self.image.get_rect()
         # Used for collision with the player (player should be detected if they touch the light around the enemy).
-        self.visionRect = pygame.Rect(xPos, yPos, 225, 225)
+        self.visionRect = pygame.Rect(xPos, yPos, 205, 205)
         # List of possible directions -- the enemy will only move up, down, left, or right.
         self.possibleDirections = [(0, 1), (1, 0), (0, -1), (-1, 0)]
         # Set the enemy's initial direction.
@@ -415,7 +426,9 @@ class Enemy(pygame.sprite.Sprite):
         self.deathCount = 0
 
     def update(self):
+        # Set the guard's animation.
         self.animation()
+        # Call all other functions on alive enemies only.
         if self.alive:
             self.check_bullets()
             self.check_dead_guards()
@@ -426,7 +439,9 @@ class Enemy(pygame.sprite.Sprite):
                 self.look()
             else:
                 self.walking = False
+            # Move the guard's torchlight with the hit box.
             self.visionRect.center = self.hitBox.center
+        # If the enemy is dead, only call look.
         else:
             self.look()
 
@@ -482,7 +497,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.turn()
 
     def turn(self):
-        # Sets a timer that stops the enemy from moving for 1.5 seconds.
+        # Sets a timer that stops the enemy from moving for a short time.
         self.canMove = pygame.time.get_ticks() + 1500
         # Change the enemy's direction, but don't turn the enemy towards the wall they just hit.
         oldDirection = self.direction
@@ -494,12 +509,12 @@ class Enemy(pygame.sprite.Sprite):
         self.possibleDirections.append(oldDirection)
 
     def check_bullets(self):
-        # Use the smallest rect (hitBox) for bullet collisions -- the enemy shouldn't die if the bullet just hits its torchlight.
+        # Use the smallest rect (hitBox) for bullet collisions -- the guard shouldn't die if the bullet just hits its torchlight.
         # Loop through the bullets.
         for bullet in bulletList:
             # If a collision occurred:
             if self.hitBox.colliderect(bullet.rect):
-                # Delete enemy from all groups, set the bullet's alive status to false.
+                # Delete guard from all groups, set the bullet's alive status to false.
                 bullet.alive = False
                 self.alive = False
                 aliveEnemyList.remove(self)
@@ -519,7 +534,7 @@ class Enemy(pygame.sprite.Sprite):
                         enemyDetected = True
 
     def animation(self):
-
+        # If the guard is dead, play the death animation once. Freeze on the final frame.
         if not self.alive:
             if self.deathCount >= 24:
                 self.originalImage = i.enemyDeath[3]
@@ -528,19 +543,20 @@ class Enemy(pygame.sprite.Sprite):
                 self.deathCount += 1
         else:
             if self.walking:
-                # If the counter is greater than the number of images in the list (5) * how long each image should be blit for (5 frames)...
-                if self.walkCount + 1 >= 200:
+                # If the counter is greater than the number of images in the list (5) * how long each image should be blit for (8 frames):
+                if self.walkCount + 1 >= 40:
                     # Set the walk count back to 0, restarting the animation loop.
                     self.walkCount = 0
                 else:
                     # Otherwise, set the sprite's original image (so it can be rotated in self.look()) to the appropriate image in the animation.
-                    # I'm int dividing the index by 5 because I want each image to be played for 5 frames before changing.
-                    self.originalImage = i.enemyWalk[self.walkCount // 20]
+                    # I'm int dividing the index by 8 because I want each image to be played for 8 frames before changing.
+                    self.originalImage = i.enemyWalk[self.walkCount // 8]
                     self.walkCount += 1
 
 
 class Boss(Enemy):
     def __init__(self, x, y):
+        # Make the boss a child class of the enemy. Everything is the same, we just want to change its sprite and size.
         super().__init__(x, y)
         self.image = i.bossIdle
         self.hitBox = pygame.Rect(x, y, 100, 100)
@@ -548,7 +564,7 @@ class Boss(Enemy):
         self.visionRect = pygame.Rect(x, y, 300, 300)
 
     def animation(self):
-
+        # Same code as the enemy, just with different sprites.
         if not self.alive:
             if self.deathCount >= 24:
                 self.originalImage = i.bossDeath[3]
@@ -557,14 +573,10 @@ class Boss(Enemy):
                 self.deathCount += 1
         else:
             if self.walking:
-                # If the counter is greater than the number of images in the list (5) * how long each image should be blit for (5 frames)...
-                if self.walkCount + 1 >= 200:
-                    # Set the walk count back to 0, restarting the animation loop.
+                if self.walkCount + 1 >= 40:
                     self.walkCount = 0
                 else:
-                    # Otherwise, set the sprite's original image (so it can be rotated in self.look()) to the appropriate image in the animation.
-                    # I'm int dividing the index by 5 because I want each image to be played for 5 frames before changing.
-                    self.originalImage = i.bossWalk[self.walkCount // 20]
+                    self.originalImage = i.bossWalk[self.walkCount // 8]
                     self.walkCount += 1
 
 
@@ -682,7 +694,7 @@ class BarSlider(pygame.sprite.Sprite):
         allSprites.add(self)
         overlayGroup.add(self)
         self.image = i.barSliderImage
-        self.rect = self.image.get_rect(topleft=(x, y))  # y + i.tileHeight/3 to center the slider's y position.
+        self.rect = self.image.get_rect(topleft=(x, y))
         self.x = x
         self.y = y
         self.width = self.image.get_width() + self.x
@@ -705,7 +717,8 @@ class Knob(Button):
         overlayGroup.add(self)
         self.image = i.knobImage
         # Set starting pos to halfway along the slider.
-        self.rect = self.image.get_rect(bottomleft=((xMax + xMin)/2, y + i.tileHeight - 3))
+        self.rect = self.image.get_rect(bottomleft=((xMax + xMin)/2, y + i.tileHeight - 3))  # Centering the knob on the slider.
+        # Minimum and maximum positions the knob can be positioned at -- either extremity of the slider bar.
         self.min = xMin
         self.max = xMax
         self.canMove = False
@@ -735,9 +748,9 @@ class Knob(Button):
     def move(self):
         if self.canMove:
             # Only move the knob along the X axis -- its Y should never change.
-            self.rect.x = pygame.mouse.get_pos()[0] - self.rect.width/2  # - width/2 so mouse is in the center of the knob.
+            self.rect.x = pygame.mouse.get_pos()[0] - self.rect.width/2  # Subtracting width/2 so mouse is in the center of the knob.
             # Clamp the knob's position so it can't go past the edges of the slider.
-            if self.rect.x + self.rect.width > self.max:  # + width because self.rect.x refers to the left side of the knob.
+            if self.rect.x + self.rect.width > self.max:  # Adding width because self.rect.x refers to the left side of the knob.
                 self.rect.x = self.max - self.rect.width
             if self.rect.x < self.min:
                 self.rect.x = self.min
