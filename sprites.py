@@ -87,8 +87,9 @@ class Player(pygame.sprite.Sprite):
         if not key[pygame.K_a] and not key[pygame.K_d] and not key[pygame.K_w] and not key[pygame.K_s]:
             self.walking = False
 
-        if key[pygame.K_r]:
-            self.reloading = True
+        if self.magazine <= 0:
+            if key[pygame.K_r]:
+                self.reloading = True
 
     def look(self):
         # Get the mouse position.
