@@ -84,18 +84,18 @@ doorVerBrokenImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "
 
 # Load in the animations for moving sprites.
 # List comprehension to load in the animation frames (they are saved as numbers in folders).
-playerIdle = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/idle/" + str(i + 1) + ".png") for i in range(5))]
-playerWalk = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/walk/" + str(i + 1) + ".png") for i in range(5))]
-playerShoot = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/shoot/" + str(i + 1) + ".png") for i in range(3))]
-playerReload = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/reload/" + str(i + 1) + ".png") for i in range(8))]
+playerIdle = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/idle/") + str(i + 1) + ".png") for i in range(5)]
+playerWalk = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/walk/") + str(i + 1) + ".png") for i in range(5)]
+playerShoot = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/shoot/") + str(i + 1) + ".png") for i in range(3)]
+playerReload = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/reload/") + str(i + 1) + ".png") for i in range(8)]
 
 enemyIdle = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/walk/1.png"))
-enemyWalk = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/walk/" + str(i + 1) + ".png") for i in range(10))]
-enemyDeath = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/death/" + str(i + 1) + ".png") for i in range(4))]
+enemyWalk = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/walk/") + str(i + 1) + ".png") for i in range(10)]
+enemyDeath = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/death/") + str(i + 1) + ".png") for i in range(4)]
 
 bossIdle = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/bossWalk/1.png"))
-bossWalk = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/bossWalk/" + str(i + 1) + ".png") for i in range(10))]
-bossDeath = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/bossDeath/" + str(i + 1) + ".png") for i in range(4))]
+bossWalk = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/bossWalk/") + str(i + 1) + ".png") for i in range(10)]
+bossDeath = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/bossDeath/") + str(i + 1) + ".png") for i in range(4)]
 
 # Sounds.
 soundList = []
