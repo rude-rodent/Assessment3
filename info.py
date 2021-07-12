@@ -54,7 +54,7 @@ proceedList = ["First floor cleared!", "Second floor cleared!"]
 deathList = ["You shot yourself!", "You got caught!", "A guard found a body!"]
 
 # Load all the static images for the sprites.
-bulletImage = pygame.image.load("Assets/Player/bullet.png")
+bulletImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/bullet.png"))
 
 # UI images.
 startImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/start.png"))

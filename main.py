@@ -1,4 +1,5 @@
 import pygame
+import os
 import sys
 import info as i
 import sprites as s
@@ -9,7 +10,7 @@ pygame.init()
 pygame.display.set_caption(i.caption)
 
 # Importing my own font.
-font = pygame.font.Font("Assets/UI/AGENCYR.TTF", 50)
+font = pygame.font.Font(os.path.join(os.path.dirname(__file__), "Assets/UI/AGENCYR.TTF"), 50)
 
 clock = pygame.time.Clock()
 # Every 1000 ticks, call a user event.
