@@ -1,3 +1,4 @@
+import os
 import pygame
 import levels as l
 pygame.mixer.init()
@@ -56,64 +57,64 @@ deathList = ["You shot yourself!", "You got caught!", "A guard found a body!"]
 bulletImage = pygame.image.load("Assets/Player/bullet.png")
 
 # UI images.
-startImage = pygame.image.load("Assets/UI/start.png")
-startHover = pygame.image.load("Assets/UI/startHover.png")
-quitImage = pygame.image.load("Assets/UI/quit.png")
-quitHover = pygame.image.load("Assets/UI/quitHover.png")
-howToPlayImage = pygame.image.load("Assets/UI/howToPlay.png")
-howToPlayHover = pygame.image.load("Assets/UI/howToPlayHover.png")
-continueImage = pygame.image.load("Assets/UI/continue.png")
-continueHover = pygame.image.load("Assets/UI/continueHover.png")
-menuImage = pygame.image.load("Assets/UI/mainMenu.png")
-menuHover = pygame.image.load("Assets/UI/mainMenuHover.png")
-barSliderImage = pygame.image.load("Assets/UI/barSliderImage.png")
-knobImage = pygame.image.load("Assets/UI/barKnob.png")
-instructionsImage = pygame.image.load("Assets/UI/instructions.png")
-titleImage = pygame.image.load("Assets/UI/titleScreen.png")
+startImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/start.png"))
+startHover = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/startHover.png"))
+quitImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/quit.png"))
+quitHover = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/quitHover.png"))
+howToPlayImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/howToPlay.png"))
+howToPlayHover = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/howToPlayHover.png"))
+continueImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/continue.png"))
+continueHover = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/continueHover.png"))
+menuImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/mainMenu.png"))
+menuHover = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/mainMenuHover.png"))
+barSliderImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/barSliderImage.png"))
+knobImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/barKnob.png"))
+instructionsImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/instructions.png"))
+titleImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/UI/titleScreen.png"))
 
 # Environmental images.
-map1Image = pygame.image.load("Assets/Environment/map1.png")
-map2Image = pygame.image.load("Assets/Environment/map2.png")
-map3Image = pygame.image.load("Assets/Environment/map3.png")
-wallImage = pygame.image.load("Assets/Environment/wall.png")
-doorHorImage = pygame.image.load("Assets/Environment/doorHor.png")
-doorHorBrokenImage = pygame.image.load("Assets/Environment/doorHorBroken.png")
-doorVerImage = pygame.image.load("Assets/Environment/doorVer.png")
-doorVerBrokenImage = pygame.image.load("Assets/Environment/doorVerBroken.png")
+map1Image = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Environment/map1.png"))
+map2Image = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Environment/map2.png"))
+map3Image = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Environment/map3.png"))
+wallImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Environment/wall.png"))
+doorHorImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Environment/doorHor.png"))
+doorHorBrokenImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Environment/doorHorBroken.png"))
+doorVerImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Environment/doorVer.png"))
+doorVerBrokenImage = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Environment/doorVerBroken.png"))
 
 # Load in the animations for moving sprites.
 # List comprehension to load in the animation frames (they are saved as numbers in folders).
-playerIdle = [pygame.image.load("Assets/Player/idle/" + str(i + 1) + ".png") for i in range(5)]
-playerWalk = [pygame.image.load("Assets/Player/walk/" + str(i + 1) + ".png") for i in range(5)]
-playerShoot = [pygame.image.load("Assets/Player/shoot/" + str(i + 1) + ".png") for i in range(3)]
-playerReload = [pygame.image.load("Assets/Player/reload/" + str(i + 1) + ".png") for i in range(8)]
+playerIdle = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/idle/" + str(i + 1) + ".png") for i in range(5))]
+playerWalk = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/walk/" + str(i + 1) + ".png") for i in range(5))]
+playerShoot = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/shoot/" + str(i + 1) + ".png") for i in range(3))]
+playerReload = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Player/reload/" + str(i + 1) + ".png") for i in range(8))]
 
-enemyIdle = pygame.image.load("Assets/Guard/walk/1.png")
-enemyWalk = [pygame.image.load("Assets/Guard/walk/" + str(i + 1) + ".png") for i in range(10)]
-enemyDeath = [pygame.image.load("Assets/Guard/death/" + str(i + 1) + ".png") for i in range(4)]
+enemyIdle = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/walk/1.png"))
+enemyWalk = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/walk/" + str(i + 1) + ".png") for i in range(10))]
+enemyDeath = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/death/" + str(i + 1) + ".png") for i in range(4))]
 
-bossIdle = pygame.image.load("Assets/Guard/bossWalk/1.png")
-bossWalk = [pygame.image.load("Assets/Guard/bossWalk/" + str(i + 1) + ".png") for i in range(10)]
-bossDeath = [pygame.image.load("Assets/Guard/bossDeath/" + str(i + 1) + ".png") for i in range(4)]
+bossIdle = pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/bossWalk/1.png"))
+bossWalk = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/bossWalk/" + str(i + 1) + ".png") for i in range(10))]
+bossDeath = [pygame.image.load(os.path.join(os.path.dirname(__file__), "Assets/Guard/bossDeath/" + str(i + 1) + ".png") for i in range(4))]
 
 # Sounds.
 soundList = []
 
 # Load all the sound effects, add them all to the sound list.
-shootSound = pygame.mixer.Sound("Assets/Sound/playerShoot.wav")
+shootSound = pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), "Assets/Sound/playerShoot.wav"))
 soundList.append(shootSound)
-reloadSound = pygame.mixer.Sound("Assets/Sound/playerReload.wav")
+reloadSound = pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), "Assets/Sound/playerReload.wav"))
 soundList.append(reloadSound)
-guardDeathSound = pygame.mixer.Sound("Assets/Sound/guardDeath.wav")
+guardDeathSound = pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), "Assets/Sound/guardDeath.wav"))
 soundList.append(guardDeathSound)
-houseAlarm = pygame.mixer.Sound("Assets/Sound/houseAlarm.wav")
+houseAlarm = pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), "Assets/Sound/houseAlarm.wav"))
 soundList.append(houseAlarm)
-doorBreakSound = pygame.mixer.Sound("Assets/Sound/doorBreak.wav")
+doorBreakSound = pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), "Assets/Sound/doorBreak.wav"))
 soundList.append(doorBreakSound)
-bulletBounceSound = pygame.mixer.Sound("Assets/Sound/bulletBounce.wav")
+bulletBounceSound = pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), "Assets/Sound/bulletBounce.wav"))
 soundList.append(bulletBounceSound)
-successSound = pygame.mixer.Sound("Assets/Sound/success.wav")
+successSound = pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), "Assets/Sound/success.wav"))
 soundList.append(successSound)
 
-gameMusic = pygame.mixer.Sound("Assets/Sound/music.wav")
+gameMusic = pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), "Assets/Sound/music.wav"))
 soundList.append(gameMusic)
